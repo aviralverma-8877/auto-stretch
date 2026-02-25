@@ -28,39 +28,39 @@ if not exist "..\src\app.py" (
 )
 
 REM Check if NSSM exists
-if not exist "nssm.exe" (
-    echo.
-    echo WARNING: nssm.exe not found!
-    echo.
-    echo NSSM is required for Windows service management.
-    echo.
-    echo Option 1: Download automatically
-    echo   powershell -ExecutionPolicy Bypass -File download-nssm.ps1
-    echo.
-    echo Option 2: Download manually
-    echo   1. Visit: https://nssm.cc/download
-    echo   2. Download: nssm-2.24.zip
-    echo   3. Extract: nssm-2.24\win64\nssm.exe
-    echo   4. Copy to: %cd%
-    echo.
-    choice /C YN /M "Try to download NSSM automatically now?"
-    if errorlevel 2 goto skip_nssm
-    if errorlevel 1 goto download_nssm
+if not exist "nssm.exe" goto check_nssm_missing
+goto nssm_present
 
-    :download_nssm
-    echo.
-    echo Downloading NSSM...
-    powershell -ExecutionPolicy Bypass -File download-nssm.ps1
-    if errorlevel 1 (
-        echo.
-        echo Automatic download failed. Please download manually.
-        echo You can still build the installer, but you'll need to add nssm.exe manually after installation.
-        echo.
-        pause
-    )
+:check_nssm_missing
+echo.
+echo WARNING: nssm.exe not found!
+echo.
+echo NSSM is required for Windows service management.
+echo.
+echo Option 1: Download automatically
+echo   powershell -ExecutionPolicy Bypass -File download-nssm.ps1
+echo.
+echo Option 2: Download manually
+echo   1. Visit: https://nssm.cc/download
+echo   2. Download: nssm-2.24.zip
+echo   3. Extract: nssm-2.24\win64\nssm.exe
+echo   4. Copy to: %cd%
+echo.
+choice /C YN /M "Try to download NSSM automatically now"
+if errorlevel 2 goto nssm_present
 
-    :skip_nssm
+echo.
+echo Downloading NSSM...
+powershell -ExecutionPolicy Bypass -File download-nssm.ps1
+if errorlevel 1 (
+    echo.
+    echo Automatic download failed. Please download manually.
+    echo You can still build the installer, but you'll need to add nssm.exe manually after installation.
+    echo.
+    pause
 )
+
+:nssm_present
 
 REM Build installer
 echo Building installer...

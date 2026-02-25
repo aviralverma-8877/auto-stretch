@@ -35,8 +35,8 @@ RequestExecutionLevel admin
 !define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall-blue.ico"
 !define MUI_ABORTWARNING
 !define MUI_FINISHPAGE_RUN
-!define MUI_FINISHPAGE_RUN_TEXT "Start Auto Stretch Service"
-!define MUI_FINISHPAGE_RUN_FUNCTION "StartService"
+!define MUI_FINISHPAGE_RUN_TEXT "Open Auto Stretch in Browser"
+!define MUI_FINISHPAGE_RUN_FUNCTION "OpenBrowser"
 
 ;--------------------------------
 ; Pages
@@ -207,6 +207,11 @@ Section "Install"
   ; Install and configure service
   DetailPrint "Installing Windows service..."
   nsExec::ExecToLog 'powershell -ExecutionPolicy Bypass -File "$INSTDIR\install-service.ps1" "$INSTDIR" "$PortNumber"'
+  Pop $0
+  ${If} $0 != 0
+    DetailPrint "WARNING: Service installation returned error code $0"
+    DetailPrint "Check logs at: $INSTDIR\logs\service-error.log"
+  ${EndIf}
 
   ; Create uninstaller
   WriteUninstaller "$INSTDIR\Uninstall.exe"
@@ -235,18 +240,18 @@ Section "Install"
   ; Create Desktop shortcut
   CreateShortCut "$DESKTOP\${APP_NAME}.lnk" "http://localhost:$PortNumber"
 
-  MessageBox MB_OK "Installation complete!$\n$\nAuto Stretch is now installed as a Windows service.$\n$\nAccess the web interface at:$\nhttp://localhost:$PortNumber"
+  MessageBox MB_OK "Installation complete!$\n$\nAuto Stretch is now running as a Windows service.$\n$\nAccess the web interface at:$\nhttp://localhost:$PortNumber$\n$\nNote: The service may take a few seconds to fully start."
 SectionEnd
 
 ;--------------------------------
-; Start Service Function
+; Open Browser Function
 
-Function StartService
-  DetailPrint "Starting Auto Stretch service..."
-  nsExec::ExecToLog 'powershell -ExecutionPolicy Bypass -File "$INSTDIR\start-service.ps1"'
+Function OpenBrowser
+  ; Wait for service to fully start
+  DetailPrint "Waiting for service to start..."
+  Sleep 5000
 
   ; Open browser
-  Sleep 2000
   Exec '"http://localhost:$PortNumber"'
 FunctionEnd
 

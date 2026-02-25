@@ -12,7 +12,9 @@
       "Bash(powershell -Command \"Write-Host ''PowerShell is available''\")",
       "Bash(powershell -Command \"$ErrorActionPreference=''Stop''; try { $null = [System.Management.Automation.PSParser]::Tokenize\\(\\(Get-Content ''simple-install.ps1'' -Raw\\), [ref]$null\\); Write-Host ''PowerShell syntax valid'' } catch { Write-Host ''Syntax error:'' $_.Exception.Message; exit 1 }\")",
       "Bash(powershell -ExecutionPolicy Bypass -File validate-scripts.ps1:*)",
-      "Bash(powershell -ExecutionPolicy Bypass -File download-nssm.ps1)"
+      "Bash(powershell -ExecutionPolicy Bypass -File download-nssm.ps1)",
+      "Bash(powershell -Command \"Get-Service AutoStretch | Select-Object Name, Status, StartType\")",
+      "Bash(powershell -Command \"Test-Path ''C:\\\\Program Files\\\\AutoStretch''\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\aviralv\\Downloads\\auto-streach"

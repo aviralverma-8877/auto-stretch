@@ -165,7 +165,7 @@ Section "Install"
   ; Copy bundled Python
   DetailPrint "Installing bundled Python..."
   SetOutPath "$INSTDIR\python"
-  IfFileExists "python-embed\*.*" 0 python_missing
+  IfFileExists "python-embed\python.exe" 0 python_missing
     File /r "python-embed\*.*"
     Goto python_done
   python_missing:

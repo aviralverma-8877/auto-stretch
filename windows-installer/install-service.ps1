@@ -34,12 +34,12 @@ if (-not (Test-Path $nssmPath)) {
 }
 
 # Verify Python and app.py exist
-$pythonExe = "$InstallDir\venv\Scripts\python.exe"
+$pythonExe = "$InstallDir\python\python.exe"
 $appScript = "$InstallDir\app.py"
 
 if (-not (Test-Path $pythonExe)) {
     Write-Host "ERROR: Python not found at: $pythonExe" -ForegroundColor Red
-    Write-Host "Virtual environment may not have been created." -ForegroundColor Yellow
+    Write-Host "Bundled Python was not installed correctly." -ForegroundColor Yellow
     exit 1
 }
 

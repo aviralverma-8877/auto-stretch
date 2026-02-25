@@ -27,6 +27,40 @@ if not exist "..\src\app.py" (
     exit /b 1
 )
 
+REM Check if bundled Python exists
+if not exist "python-embed\python.exe" goto check_python_missing
+goto python_present
+
+:check_python_missing
+echo.
+echo WARNING: Bundled Python not found!
+echo.
+echo Bundled Python is required to create a fully self-contained installer.
+echo.
+echo Option 1: Download automatically
+echo   powershell -ExecutionPolicy Bypass -File download-python.ps1
+echo.
+echo Option 2: Download manually
+echo   1. Visit: https://www.python.org/downloads/
+echo   2. Download: Python 3.12.x embeddable package (64-bit)
+echo   3. Extract to: python-embed
+echo.
+choice /C YN /M "Try to download Python automatically now"
+if errorlevel 2 goto python_present
+
+echo.
+echo Downloading Python embeddable package...
+powershell -ExecutionPolicy Bypass -File download-python.ps1
+if errorlevel 1 (
+    echo.
+    echo Automatic download failed. Please download manually.
+    echo.
+    pause
+    exit /b 1
+)
+
+:python_present
+
 REM Check if NSSM exists
 if not exist "nssm.exe" goto check_nssm_missing
 goto nssm_present

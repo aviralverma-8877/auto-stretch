@@ -81,89 +81,8 @@ Function .onInit
     Abort
   ${EndIf}
 
-  ; Check if Python 3.9+ is installed
-  Call CheckPython
-
-  ; Set default port
+  ; Set default port (Python is bundled, no need to check)
   StrCpy $PortNumber "5000"
-FunctionEnd
-
-Function CheckPython
-  ; Check for Python in PATH
-  nsExec::ExecToStack 'python --version'
-  Pop $0
-  Pop $1
-
-  ${If} $0 == 0
-    ; Python found, check if it's Windows Store version
-    nsExec::ExecToStack 'python -c "import sys; print(sys.executable)"'
-    Pop $0
-    Pop $2
-
-    ; Check if path contains WindowsApps (Windows Store Python)
-    StrCpy $3 $2 "" -11  ; Get last 11 chars
-    ${If} $2 != ""
-      StrCpy $4 $2 11 0  ; Get first 11 chars
-    ${EndIf}
-
-    ; Simple check for WindowsApps in path
-    Push $2
-    Push "WindowsApps"
-    Call StrStr
-    Pop $5
-
-    ${If} $5 != ""
-      MessageBox MB_OK|MB_ICONEXCLAMATION "Windows Store Python detected!$\n$\nWindows Store Python cannot be used for Windows services.$\n$\nPlease install Python from https://www.python.org/ instead:$\n$\n1. Download Python 3.9 or later from python.org$\n2. Run installer and check 'Add to PATH'$\n3. Run this installer again"
-      Abort
-    ${EndIf}
-
-    StrCpy $PythonPath "python"
-  ${Else}
-    ; Try python3
-    nsExec::ExecToStack 'python3 --version'
-    Pop $0
-    Pop $1
-    ${If} $0 == 0
-      StrCpy $PythonPath "python3"
-    ${Else}
-      MessageBox MB_OK|MB_ICONEXCLAMATION "Python 3.9 or later is required but not found.$\n$\nPlease install Python from https://www.python.org/ and try again.$\n$\nIMPORTANT: Do NOT use Windows Store Python!"
-      Abort
-    ${EndIf}
-  ${EndIf}
-FunctionEnd
-
-; String search function
-Function StrStr
-  Exch $R1 ; SearchText
-  Exch
-  Exch $R2 ; String
-  Push $R3
-  Push $R4
-  Push $R5
-
-  StrLen $R3 $R1
-  StrCpy $R4 0
-
-  loop:
-    StrCpy $R5 $R2 $R3 $R4
-    StrCmp $R5 $R1 found
-    StrCmp $R5 "" notfound
-    IntOp $R4 $R4 + 1
-    Goto loop
-
-  found:
-    StrCpy $R1 $R2
-    Goto done
-
-  notfound:
-    StrCpy $R1 ""
-
-  done:
-    Pop $R5
-    Pop $R4
-    Pop $R3
-    Pop $R2
-    Exch $R1
 FunctionEnd
 
 Function PortConfigPage
@@ -231,11 +150,9 @@ Section "Install"
 
   ; Copy NSSM (Non-Sucking Service Manager)
   DetailPrint "Installing NSSM service manager..."
-  ; Check if nssm.exe exists in installer directory
   IfFileExists "$EXEDIR\nssm.exe" 0 +3
     CopyFiles "$EXEDIR\nssm.exe" "$INSTDIR\nssm.exe"
     Goto nssm_done
-  ; If not in EXEDIR, try current directory
   IfFileExists "nssm.exe" 0 nssm_missing
     File "nssm.exe"
     Goto nssm_done
@@ -245,19 +162,32 @@ Section "Install"
     DetailPrint "Extract nssm.exe to $INSTDIR manually after installation."
   nssm_done:
 
+  ; Copy bundled Python
+  DetailPrint "Installing bundled Python..."
+  SetOutPath "$INSTDIR\python"
+  IfFileExists "python-embed\*.*" 0 python_missing
+    File /r "python-embed\*.*"
+    Goto python_done
+  python_missing:
+    MessageBox MB_OK|MB_ICONSTOP "Bundled Python not found!$\n$\nThe installer was not built correctly.$\nPlease run: download-python.ps1 before building the installer."
+    Abort
+  python_done:
+
+  SetOutPath "$INSTDIR"
+
   ; Create config file with port
   FileOpen $0 "$INSTDIR\config.env" w
   FileWrite $0 "APP_PORT=$PortNumber$\r$\n"
   FileClose $0
 
-  ; Create Python virtual environment with --copies flag (makes it self-contained)
-  DetailPrint "Creating Python virtual environment..."
-  nsExec::ExecToLog '"$PythonPath" -m venv "$INSTDIR\venv" --copies'
+  ; Install pip in bundled Python
+  DetailPrint "Installing pip..."
+  nsExec::ExecToLog '"$INSTDIR\python\python.exe" "$INSTDIR\python\get-pip.py" --no-warn-script-location'
 
   ; Install dependencies
   DetailPrint "Installing Python dependencies..."
-  nsExec::ExecToLog '"$INSTDIR\venv\Scripts\pip.exe" install --upgrade pip wheel'
-  nsExec::ExecToLog '"$INSTDIR\venv\Scripts\pip.exe" install -r "$INSTDIR\requirements.txt"'
+  nsExec::ExecToLog '"$INSTDIR\python\python.exe" -m pip install --upgrade pip wheel --no-warn-script-location'
+  nsExec::ExecToLog '"$INSTDIR\python\python.exe" -m pip install -r "$INSTDIR\requirements.txt" --no-warn-script-location'
 
   ; Grant permissions to SYSTEM account (required for service)
   DetailPrint "Setting file permissions for service..."
@@ -323,7 +253,8 @@ Section "Uninstall"
   nsExec::ExecToLog 'powershell -ExecutionPolicy Bypass -File "$INSTDIR\uninstall-service.ps1"'
 
   ; Remove files
-  RMDir /r "$INSTDIR\venv"
+  RMDir /r "$INSTDIR\python"
+  RMDir /r "$INSTDIR\logs"
   RMDir /r "$INSTDIR\templates"
   RMDir /r "$INSTDIR\static"
   RMDir /r "$INSTDIR\__pycache__"

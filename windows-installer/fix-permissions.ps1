@@ -77,7 +77,7 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host "Setting application parameters..." -ForegroundColor Gray
 
 # CRITICAL: Set app.py as AppParameters (not as part of install command)
-& "$InstallDir\nssm.exe" set AutoStretch AppParameters $appScript
+& "$InstallDir\nssm.exe" set AutoStretch AppParameters "`"$appScript`""
 
 & "$InstallDir\nssm.exe" set AutoStretch DisplayName "Auto Stretch - Astronomy Image Processor"
 & "$InstallDir\nssm.exe" set AutoStretch Description "Flask-based web application for processing astronomical TIFF images"

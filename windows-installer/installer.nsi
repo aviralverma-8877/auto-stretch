@@ -246,6 +246,9 @@ Section "Uninstall"
   DetailPrint "Stopping and removing service..."
   nsExec::ExecToLog 'powershell -ExecutionPolicy Bypass -File "$INSTDIR\uninstall-service.ps1"'
 
+  ; Wait for service to be completely removed
+  Sleep 3000
+
   ; Remove files
   RMDir /r "$INSTDIR\python"
   RMDir /r "$INSTDIR\logs"

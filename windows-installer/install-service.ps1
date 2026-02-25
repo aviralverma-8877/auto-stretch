@@ -87,16 +87,43 @@ try {
     }
 }
 
-# Check if service already exists
+# Check if service already exists and remove it completely
 $existingService = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
 if ($existingService) {
-    Write-Host "Service already exists. Stopping..." -ForegroundColor Yellow
-    Stop-Service -Name $ServiceName -Force -ErrorAction SilentlyContinue
-    Start-Sleep -Seconds 2
+    Write-Host "Existing service found. Removing completely..." -ForegroundColor Yellow
 
-    Write-Host "Removing existing service..." -ForegroundColor Yellow
-    & "$nssmPath" remove $ServiceName confirm
-    Start-Sleep -Seconds 2
+    # Stop service
+    Stop-Service -Name $ServiceName -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 3
+
+    # Kill any remaining Python processes from this installation
+    $pythonPath = "$InstallDir\python\python.exe"
+    if (Test-Path $pythonPath) {
+        $processes = Get-Process python -ErrorAction SilentlyContinue | Where-Object {
+            $_.Path -like "$InstallDir\*"
+        }
+        if ($processes) {
+            Write-Host "Stopping $($processes.Count) running process(es)..." -ForegroundColor Yellow
+            $processes | Stop-Process -Force -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 2
+        }
+    }
+
+    # Remove service
+    Write-Host "Removing old service configuration..." -ForegroundColor Yellow
+    & "$nssmPath" remove $ServiceName confirm 2>&1 | Out-Null
+    Start-Sleep -Seconds 3
+
+    # Verify removal
+    $checkService = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
+    if ($checkService) {
+        Write-Host "Using sc.exe to force remove..." -ForegroundColor Yellow
+        sc.exe delete $ServiceName 2>&1 | Out-Null
+        Start-Sleep -Seconds 2
+    }
+
+    Write-Host "[OK] Old service removed" -ForegroundColor Green
+    Write-Host ""
 }
 
 # Install service using NSSM

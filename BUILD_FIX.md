@@ -210,4 +210,73 @@ All Python dependencies are isolated within this venv.
 
 ---
 
+## Issue 4: Pillow Build Failure (KeyError: '__version__')
+
+### Problem
+```
+error: subprocess-exited-with-error
+
+× Getting requirements to build wheel did not run successfully.
+  │ exit code: 1
+  ╰─> KeyError: '__version__'
+
+ERROR: Failed to build 'Pillow' when getting requirements to build wheel
+```
+
+### Root Cause
+Pillow requires compilation from source and needs development libraries. Building from source during package installation:
+- Takes a long time
+- Requires build tools (gcc, make, etc.)
+- Requires image library headers (libjpeg-dev, zlib1g-dev, etc.)
+- Can fail on different systems
+
+### Solution Applied
+
+**Use Debian System Packages for Heavy Dependencies**
+
+Instead of compiling heavy libraries from source, we now use pre-built Debian packages:
+
+**1. Updated `debian/DEBIAN/control` dependencies:**
+```
+Depends: python3 (>= 3.9), python3-pip, python3-venv, python3-pil, python3-numpy, siril
+```
+
+**2. Updated `debian/DEBIAN/postinst` to use system packages:**
+```bash
+# Create venv with --system-site-packages flag
+python3 -m venv "$APP_DIR/venv" --system-site-packages
+
+# Install only pure Python packages via pip
+"$APP_DIR/venv/bin/pip" install --no-cache-dir Flask==3.0.0 Werkzeug==3.0.1
+"$APP_DIR/venv/bin/pip" install --no-cache-dir tifffile
+```
+
+### How It Works
+
+1. **System packages** (python3-pil, python3-numpy) are installed via apt
+2. **Virtual environment** is created with `--system-site-packages` flag
+3. This allows the venv to access system-installed packages
+4. Only **pure Python packages** (Flask, tifffile) are installed via pip
+5. No compilation needed - everything uses pre-built binaries
+
+### Benefits
+- ✅ **Fast installation** - no compilation time
+- ✅ **Reliable** - uses tested Debian packages
+- ✅ **No build tools needed** - no gcc, make, headers required
+- ✅ **Smaller package** - shares system libraries
+- ✅ **Consistent** - same packages across all Debian Trixie systems
+
+### Package Dependencies Map
+
+| Package | Source | Reason |
+|---------|--------|--------|
+| Flask | pip (venv) | Need specific version 3.0.0 |
+| Werkzeug | pip (venv) | Need specific version 3.0.1 |
+| Pillow | apt (system) | Heavy, requires compilation |
+| numpy | apt (system) | Heavy, requires compilation |
+| tifffile | pip (venv) | Pure Python, not in Debian repos |
+| siril | apt (system) | External tool for preprocessing |
+
+---
+
 ## Status: ✅ ALL ISSUES FIXED

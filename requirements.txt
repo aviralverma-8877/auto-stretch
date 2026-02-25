@@ -1,6 +1,14 @@
+# Pure Python packages (installed via pip in venv)
 Flask==3.0.0
 Werkzeug==3.0.1
+tifffile>=2024.8.0
+
+# Heavy compiled dependencies (installed via apt system packages in Debian package)
+# These are listed here for reference and development environments
+# In production Debian package, these come from: python3-pil, python3-numpy
 Pillow==10.2.0
 numpy==1.26.3
-tifffile>=2024.8.0
+
+# Optional: imagecodecs for advanced TIFF support
+# Falls back to Pillow if not available
 imagecodecs>=2024.6.0

@@ -24,14 +24,23 @@ case "$1" in
                 --comment "Auto Stretch Service User" "$APP_USER"
         fi
 
-        # Create virtual environment
+        # Create virtual environment with system packages access
+        # This allows using system-installed python3-pil and python3-numpy
         echo "Creating Python virtual environment..."
-        python3 -m venv "$APP_DIR/venv"
+        python3 -m venv "$APP_DIR/venv" --system-site-packages
 
         # Install Python dependencies in virtual environment
         echo "Installing Python dependencies..."
-        "$APP_DIR/venv/bin/pip" install --upgrade pip
-        "$APP_DIR/venv/bin/pip" install -r "$APP_DIR/requirements.txt"
+        "$APP_DIR/venv/bin/pip" install --no-cache-dir --upgrade pip wheel
+
+        # Install Flask and other pure Python packages
+        # Heavy dependencies (Pillow, numpy) come from system packages
+        echo "Installing Flask and dependencies..."
+        "$APP_DIR/venv/bin/pip" install --no-cache-dir Flask==3.0.0 Werkzeug==3.0.1
+
+        # Install TIFF support (pure Python packages)
+        echo "Installing TIFF support..."
+        "$APP_DIR/venv/bin/pip" install --no-cache-dir tifffile || echo "Warning: tifffile not installed, will use Pillow"
 
         # Set proper ownership and permissions
         echo "Setting permissions..."

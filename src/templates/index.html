@@ -129,6 +129,18 @@
             </div>
         </div>
 
+        <div class="upload-progress-section" id="uploadProgressSection" style="display: none;">
+            <h3>📤 Uploading...</h3>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="uploadProgressBar"></div>
+            </div>
+            <div class="progress-info">
+                <span id="uploadPercentage">0%</span>
+                <span id="uploadSpeed"></span>
+                <span id="uploadSize"></span>
+            </div>
+        </div>
+
         <div class="loading-section" id="loadingSection" style="display: none;">
             <div class="spinner"></div>
             <p>Processing your image... This may take a moment.</p>
@@ -274,51 +286,111 @@
 
             formData.append('use_siril', document.getElementById('use_siril').checked);
 
-            // Show loading
+            // Hide sections
             parametersSection.style.display = 'none';
-            document.getElementById('loadingSection').style.display = 'block';
             document.getElementById('errorSection').style.display = 'none';
             document.getElementById('resultsSection').style.display = 'none';
+
+            // Show upload progress for new files (not reprocessing)
+            if (!isReprocessing) {
+                document.getElementById('uploadProgressSection').style.display = 'block';
+                document.getElementById('loadingSection').style.display = 'none';
+            } else {
+                document.getElementById('uploadProgressSection').style.display = 'none';
+                document.getElementById('loadingSection').style.display = 'block';
+            }
 
             // Choose endpoint based on whether this is reprocessing
             const endpoint = isReprocessing ? '/reprocess' : '/upload';
 
-            // Send request
-            fetch(endpoint, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('loadingSection').style.display = 'none';
+            // Use XMLHttpRequest for upload progress tracking
+            const xhr = new XMLHttpRequest();
+            let uploadStartTime = Date.now();
+            let lastLoaded = 0;
+            let lastTime = Date.now();
 
-                if (data.error) {
-                    showError(data.error);
-                    parametersSection.style.display = 'block';
-                } else {
-                    // Store input file info for reprocessing
-                    inputFileId = data.input_file;
-                    originalFilename = data.original_filename;
+            // Track upload progress
+            xhr.upload.addEventListener('progress', function(e) {
+                if (e.lengthComputable) {
+                    const percentComplete = (e.loaded / e.total) * 100;
+                    const progressBar = document.getElementById('uploadProgressBar');
+                    const percentageText = document.getElementById('uploadPercentage');
+                    const speedText = document.getElementById('uploadSpeed');
+                    const sizeText = document.getElementById('uploadSize');
 
-                    // Show results
-                    document.getElementById('previewImage').src = data.preview_url;
-                    downloadUrl = data.download_url;
+                    // Update progress bar
+                    progressBar.style.width = percentComplete + '%';
+                    percentageText.textContent = Math.round(percentComplete) + '%';
 
-                    // Show both parameters and results for easy reprocessing
-                    parametersSection.style.display = 'block';
-                    document.getElementById('resultsSection').style.display = 'block';
+                    // Calculate upload speed
+                    const currentTime = Date.now();
+                    const timeElapsed = (currentTime - lastTime) / 1000; // seconds
+                    const bytesUploaded = e.loaded - lastLoaded;
 
-                    // Update button text to indicate reprocessing is available
-                    const processBtn = document.getElementById('processBtn');
-                    processBtn.textContent = '🔄 Reprocess with New Parameters';
-                    processBtn.onclick = () => processImage(true);
+                    if (timeElapsed > 0.5) { // Update every 0.5 seconds
+                        const speedBps = bytesUploaded / timeElapsed;
+                        const speedMBps = speedBps / (1024 * 1024);
+                        speedText.textContent = speedMBps.toFixed(2) + ' MB/s';
+
+                        lastLoaded = e.loaded;
+                        lastTime = currentTime;
+                    }
+
+                    // Show size info
+                    const uploadedMB = (e.loaded / (1024 * 1024)).toFixed(2);
+                    const totalMB = (e.total / (1024 * 1024)).toFixed(2);
+                    sizeText.textContent = uploadedMB + ' / ' + totalMB + ' MB';
                 }
-            })
-            .catch(error => {
+            });
+
+            // Upload complete, start processing
+            xhr.addEventListener('load', function() {
+                document.getElementById('uploadProgressSection').style.display = 'none';
+                document.getElementById('loadingSection').style.display = 'block';
+
+                if (xhr.status === 200) {
+                    const data = JSON.parse(xhr.responseText);
+                    document.getElementById('loadingSection').style.display = 'none';
+
+                    if (data.error) {
+                        showError(data.error);
+                        parametersSection.style.display = 'block';
+                    } else {
+                        // Store input file info for reprocessing
+                        inputFileId = data.input_file;
+                        originalFilename = data.original_filename;
+
+                        // Show results
+                        document.getElementById('previewImage').src = data.preview_url;
+                        downloadUrl = data.download_url;
+
+                        // Show both parameters and results for easy reprocessing
+                        parametersSection.style.display = 'block';
+                        document.getElementById('resultsSection').style.display = 'block';
+
+                        // Update button text to indicate reprocessing is available
+                        const processBtn = document.getElementById('processBtn');
+                        processBtn.textContent = '🔄 Reprocess with New Parameters';
+                        processBtn.onclick = () => processImage(true);
+                    }
+                } else {
+                    document.getElementById('loadingSection').style.display = 'none';
+                    showError('Upload failed with status: ' + xhr.status);
+                    parametersSection.style.display = 'block';
+                }
+            });
+
+            // Handle errors
+            xhr.addEventListener('error', function() {
+                document.getElementById('uploadProgressSection').style.display = 'none';
                 document.getElementById('loadingSection').style.display = 'none';
-                showError('An error occurred: ' + error.message);
+                showError('Network error occurred during upload');
                 parametersSection.style.display = 'block';
             });
+
+            // Send request
+            xhr.open('POST', endpoint);
+            xhr.send(formData);
         }
 
         function downloadImage() {

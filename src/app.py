@@ -18,6 +18,11 @@ app = Flask(__name__,
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB max file size
 app.config['UPLOAD_FOLDER'] = tempfile.gettempdir()
 
+# Optimize upload performance
+app.config['MAX_CONTENT_PATH'] = 500 * 1024 * 1024
+# Use larger buffer for file operations (8MB)
+BUFFER_SIZE = 8 * 1024 * 1024
+
 ALLOWED_EXTENSIONS = {'tif', 'tiff'}
 
 def allowed_file(filename):
@@ -198,11 +203,18 @@ def upload_file():
 
         use_siril = request.form.get('use_siril', 'false') == 'true'
 
-        # Save uploaded file
+        # Save uploaded file with streaming and larger buffer for better performance
         filename = secure_filename(file.filename)
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
         input_path = os.path.join(app.config['UPLOAD_FOLDER'], f'input_{timestamp}_{filename}')
-        file.save(input_path)
+
+        # Use chunked writing with larger buffer for faster upload
+        with open(input_path, 'wb') as f:
+            while True:
+                chunk = file.stream.read(BUFFER_SIZE)
+                if not chunk:
+                    break
+                f.write(chunk)
 
         # Process image
         if use_siril:

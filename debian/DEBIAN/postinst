@@ -11,6 +11,32 @@ case "$1" in
     configure)
         echo "Configuring $PACKAGE..."
 
+        # Ask user for port configuration
+        echo ""
+        echo "======================================"
+        echo "Auto Stretch Port Configuration"
+        echo "======================================"
+        read -p "Enter port number for the web interface (default: 5000): " USER_PORT
+
+        # Use default if empty
+        if [ -z "$USER_PORT" ]; then
+            APP_PORT=5000
+            echo "Using default port: 5000"
+        else
+            # Validate port number
+            if [[ "$USER_PORT" =~ ^[0-9]+$ ]] && [ "$USER_PORT" -ge 1 ] && [ "$USER_PORT" -le 65535 ]; then
+                APP_PORT=$USER_PORT
+                echo "Using port: $APP_PORT"
+            else
+                echo "Invalid port number. Using default: 5000"
+                APP_PORT=5000
+            fi
+        fi
+        echo ""
+
+        # Save port configuration
+        echo "APP_PORT=$APP_PORT" > "$APP_DIR/config.env"
+
         # Create system user and group if they don't exist
         if ! getent group "$APP_GROUP" > /dev/null 2>&1; then
             echo "Creating group $APP_GROUP..."
@@ -48,6 +74,7 @@ case "$1" in
         chmod -R 755 "$APP_DIR"
         chmod 644 "$APP_DIR"/*.py
         chmod 644 "$APP_DIR/requirements.txt"
+        chmod 644 "$APP_DIR/config.env"
 
         # Reload systemd daemon
         echo "Reloading systemd daemon..."
@@ -67,7 +94,15 @@ case "$1" in
             echo "=============================================="
             echo ""
             echo "Service Status: RUNNING"
-            echo "Access the web interface at: http://localhost:5000"
+            echo "Access the web interface at: http://localhost:$APP_PORT"
+            echo ""
+            echo "Configuration:"
+            echo "  - Port: $APP_PORT"
+            echo "  - Config file: $APP_DIR/config.env"
+            echo ""
+            echo "To change the port:"
+            echo "  1. Edit: $APP_DIR/config.env"
+            echo "  2. Restart: sudo systemctl restart auto-stretch"
             echo ""
             echo "Useful commands:"
             echo "  - Check status: sudo systemctl status auto-stretch"

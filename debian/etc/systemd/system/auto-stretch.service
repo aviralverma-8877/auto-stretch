@@ -10,6 +10,7 @@ Group=auto-stretch
 WorkingDirectory=/opt/auto-stretch
 Environment="PATH=/opt/auto-stretch/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 Environment="PYTHONUNBUFFERED=1"
+EnvironmentFile=-/opt/auto-stretch/config.env
 ExecStart=/opt/auto-stretch/venv/bin/python /opt/auto-stretch/app_start.py
 Restart=always
 RestartSec=10

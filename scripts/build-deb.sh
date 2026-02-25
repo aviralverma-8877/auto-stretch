@@ -52,8 +52,13 @@ sys.path.insert(0, '/opt/auto-stretch')
 from app import app
 
 if __name__ == '__main__':
+    # Get port from environment variable or use default
+    port = int(os.environ.get('APP_PORT', 5000))
+
+    print(f"Starting Auto Stretch on port {port}...")
+
     # Run on all interfaces for systemd service
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=port, debug=False)
 APPSTART
 
 # Set proper permissions

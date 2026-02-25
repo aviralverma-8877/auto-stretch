@@ -37,7 +37,8 @@ auto-streach/
 │   ├── DEBIAN_PACKAGE.md       # Debian packaging guide
 │   ├── INSTALL_DEBIAN.md       # Installation instructions
 │   ├── PACKAGE_SUMMARY.md      # Package summary
-│   └── BUILD_ON_WINDOWS.md     # Windows build guide
+│   ├── BUILD_ON_WINDOWS.md     # Windows build guide
+│   └── PORT_CONFIGURATION.md   # Port configuration guide
 │
 ├── tests/                      # Test files
 │   ├── test_upload.py          # Upload testing script
@@ -106,3 +107,18 @@ scripts\build-with-docker.bat
 - Flask automatically finds `templates/` and `static/` relative to `app.py`
 - Build scripts reference files in `src/` directory
 - Temporary files are created in system temp directory, not in project
+
+## Post-Installation Files
+
+After installing the Debian package, these additional files are created:
+
+- `/opt/auto-stretch/config.env` - Port configuration (e.g., APP_PORT=5000)
+- `/opt/auto-stretch/venv/` - Python virtual environment with dependencies
+- `/opt/auto-stretch/app_start.py` - Systemd service wrapper script
+
+## Port Configuration
+
+During package installation, you'll be prompted to choose a port:
+- Default: 5000
+- Can be changed by editing `/opt/auto-stretch/config.env`
+- See [docs/PORT_CONFIGURATION.md](docs/PORT_CONFIGURATION.md) for details

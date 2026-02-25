@@ -10,9 +10,16 @@ If you already have the `.deb` package:
 sudo dpkg -i auto-stretch_1.0.0_all.deb
 ```
 
+**During installation, you'll be asked:**
+```
+Enter port number for the web interface (default: 5000):
+```
+- Press **Enter** for default port 5000
+- Or enter a **custom port** (e.g., 8080, 3000)
+
 That's it! The application will:
 - Install Siril automatically
-- Start running on http://localhost:5000
+- Start running on http://localhost:[YOUR_PORT]
 - Auto-start on system boot
 
 ## Building the Package
@@ -47,7 +54,27 @@ sudo systemctl status auto-stretch
 
 ### Access Web Interface
 Open your browser to:
-- Local: http://localhost:5000
+- Local: http://localhost:[YOUR_PORT]
+- Default: http://localhost:5000
+
+### Change Port After Installation
+
+Edit the configuration file:
+```bash
+sudo nano /opt/auto-stretch/config.env
+```
+
+Change the port number:
+```
+APP_PORT=8080
+```
+
+Restart the service:
+```bash
+sudo systemctl restart auto-stretch
+```
+
+See [PORT_CONFIGURATION.md](PORT_CONFIGURATION.md) for detailed instructions.
 - Network: http://YOUR_SERVER_IP:5000
 
 ### View Logs

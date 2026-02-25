@@ -33,9 +33,22 @@ auto-streach/
 │       └── systemd/system/
 │           └── auto-stretch.service  # Systemd service file
 │
+├── windows-installer/          # Windows installer files
+│   ├── installer.nsi           # NSIS installer script
+│   ├── build-installer.bat     # Build NSIS installer
+│   ├── simple-install.ps1      # PowerShell installer
+│   ├── simple-uninstall.ps1    # PowerShell uninstaller
+│   ├── install-service.ps1     # Install Windows service
+│   ├── start-service.ps1       # Start service script
+│   ├── stop-service.ps1        # Stop service script
+│   ├── uninstall-service.ps1   # Uninstall service script
+│   ├── README.md               # Windows installer guide
+│   └── README_WINDOWS.md       # Detailed Windows documentation
+│
 ├── docs/                       # Documentation
 │   ├── DEBIAN_PACKAGE.md       # Debian packaging guide
-│   ├── INSTALL_DEBIAN.md       # Installation instructions
+│   ├── INSTALL_DEBIAN.md       # Debian installation instructions
+│   ├── INSTALL_WINDOWS.md      # Windows installation instructions
 │   ├── PACKAGE_SUMMARY.md      # Package summary
 │   ├── BUILD_ON_WINDOWS.md     # Windows build guide
 │   └── PORT_CONFIGURATION.md   # Port configuration guide
@@ -62,6 +75,9 @@ Build scripts, utilities, and helper tools. Not deployed with the application.
 
 ### debian/
 Debian package configuration and control files for creating .deb packages.
+
+### windows-installer/
+Windows installer files for creating Windows service installation packages. Includes both NSIS GUI installer and PowerShell script installation methods.
 
 ### docs/
 All documentation files except the main README.md.

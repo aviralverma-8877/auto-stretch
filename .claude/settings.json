@@ -7,7 +7,14 @@
       "Bash(dir:*)",
       "Bash(findstr:*)",
       "Bash(chmod:*)",
-      "Read(//tmp/claude/c--Users-aviralv-Downloads-auto-streach/tasks/**)"
+      "Read(//tmp/claude/c--Users-aviralv-Downloads-auto-streach/tasks/**)",
+      "Bash(where:*)",
+      "Bash(powershell -Command \"Write-Host ''PowerShell is available''\")",
+      "Bash(powershell -Command \"$ErrorActionPreference=''Stop''; try { $null = [System.Management.Automation.PSParser]::Tokenize\\(\\(Get-Content ''simple-install.ps1'' -Raw\\), [ref]$null\\); Write-Host ''PowerShell syntax valid'' } catch { Write-Host ''Syntax error:'' $_.Exception.Message; exit 1 }\")",
+      "Bash(powershell -ExecutionPolicy Bypass -File validate-scripts.ps1:*)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\aviralv\\Downloads\\auto-streach"
     ]
   }
 }

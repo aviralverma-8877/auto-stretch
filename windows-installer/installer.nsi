@@ -95,7 +95,28 @@ Function CheckPython
   Pop $1
 
   ${If} $0 == 0
-    ; Python found, check version
+    ; Python found, check if it's Windows Store version
+    nsExec::ExecToStack 'python -c "import sys; print(sys.executable)"'
+    Pop $0
+    Pop $2
+
+    ; Check if path contains WindowsApps (Windows Store Python)
+    StrCpy $3 $2 "" -11  ; Get last 11 chars
+    ${If} $2 != ""
+      StrCpy $4 $2 11 0  ; Get first 11 chars
+    ${EndIf}
+
+    ; Simple check for WindowsApps in path
+    Push $2
+    Push "WindowsApps"
+    Call StrStr
+    Pop $5
+
+    ${If} $5 != ""
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Windows Store Python detected!$\n$\nWindows Store Python cannot be used for Windows services.$\n$\nPlease install Python from https://www.python.org/ instead:$\n$\n1. Download Python 3.9 or later from python.org$\n2. Run installer and check 'Add to PATH'$\n3. Run this installer again"
+      Abort
+    ${EndIf}
+
     StrCpy $PythonPath "python"
   ${Else}
     ; Try python3
@@ -105,10 +126,44 @@ Function CheckPython
     ${If} $0 == 0
       StrCpy $PythonPath "python3"
     ${Else}
-      MessageBox MB_OK|MB_ICONEXCLAMATION "Python 3.9 or later is required but not found.$\n$\nPlease install Python from https://www.python.org/ and try again."
+      MessageBox MB_OK|MB_ICONEXCLAMATION "Python 3.9 or later is required but not found.$\n$\nPlease install Python from https://www.python.org/ and try again.$\n$\nIMPORTANT: Do NOT use Windows Store Python!"
       Abort
     ${EndIf}
   ${EndIf}
+FunctionEnd
+
+; String search function
+Function StrStr
+  Exch $R1 ; SearchText
+  Exch
+  Exch $R2 ; String
+  Push $R3
+  Push $R4
+  Push $R5
+
+  StrLen $R3 $R1
+  StrCpy $R4 0
+
+  loop:
+    StrCpy $R5 $R2 $R3 $R4
+    StrCmp $R5 $R1 found
+    StrCmp $R5 "" notfound
+    IntOp $R4 $R4 + 1
+    Goto loop
+
+  found:
+    StrCpy $R1 $R2
+    Goto done
+
+  notfound:
+    StrCpy $R1 ""
+
+  done:
+    Pop $R5
+    Pop $R4
+    Pop $R3
+    Pop $R2
+    Exch $R1
 FunctionEnd
 
 Function PortConfigPage
@@ -195,9 +250,9 @@ Section "Install"
   FileWrite $0 "APP_PORT=$PortNumber$\r$\n"
   FileClose $0
 
-  ; Create Python virtual environment
+  ; Create Python virtual environment with --copies flag (makes it self-contained)
   DetailPrint "Creating Python virtual environment..."
-  nsExec::ExecToLog '"$PythonPath" -m venv "$INSTDIR\venv"'
+  nsExec::ExecToLog '"$PythonPath" -m venv "$INSTDIR\venv" --copies'
 
   ; Install dependencies
   DetailPrint "Installing Python dependencies..."

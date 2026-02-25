@@ -80,7 +80,7 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # Configure service
-& "$InstallDir\nssm.exe" set AutoStretch AppParameters $appScript
+& "$InstallDir\nssm.exe" set AutoStretch AppParameters "`"$appScript`""
 & "$InstallDir\nssm.exe" set AutoStretch DisplayName "Auto Stretch - Astronomy Image Processor"
 & "$InstallDir\nssm.exe" set AutoStretch Description "Flask-based web application for processing astronomical TIFF images"
 & "$InstallDir\nssm.exe" set AutoStretch AppDirectory $InstallDir

@@ -121,7 +121,7 @@ Write-Host "Configuring service..." -ForegroundColor Green
 
 # CRITICAL: Set the app.py script as a parameter (not part of install command)
 Write-Host "Setting application parameters (app.py)..." -ForegroundColor Gray
-& "$nssmPath" set $ServiceName AppParameters $appScript
+& "$nssmPath" set $ServiceName AppParameters "`"$appScript`""
 
 # Set other configuration
 & "$nssmPath" set $ServiceName DisplayName $ServiceDisplayName

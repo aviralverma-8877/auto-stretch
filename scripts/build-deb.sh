@@ -56,10 +56,6 @@ if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)
 APPSTART
 
-# Update the systemd service to use the wrapper script
-sed -i 's|ExecStart=/usr/bin/python3 /opt/auto-stretch/app.py|ExecStart=/usr/bin/python3 /opt/auto-stretch/app_start.py|' \
-    "$BUILD_DIR/etc/systemd/system/auto-stretch.service"
-
 # Set proper permissions
 echo "Setting permissions..."
 # DEBIAN directory and control files (strict permissions required by dpkg)

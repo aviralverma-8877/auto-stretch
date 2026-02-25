@@ -142,4 +142,72 @@ The updated build script now automatically handles this, so you can run the buil
 
 ---
 
+## Issue 3: Externally-Managed-Environment (PEP 668)
+
+### Problem
+```
+error: externally-managed-environment
+
+× This environment is externally managed
+╰─> To install Python packages system-wide, try apt install
+    python3-xyz, where xyz is the package you are trying to
+    install.
+```
+
+### Root Cause
+Debian Trixie implements PEP 668, which prevents pip from installing packages directly into the system Python environment. This is a security feature to prevent conflicts with system packages.
+
+### Solution Applied
+
+**1. Updated `debian/DEBIAN/postinst`:**
+   - Creates a Python virtual environment at `/opt/auto-stretch/venv`
+   - Installs all dependencies into the venv instead of system-wide
+
+```bash
+# Create virtual environment
+echo "Creating Python virtual environment..."
+python3 -m venv "$APP_DIR/venv"
+
+# Install Python dependencies in virtual environment
+echo "Installing Python dependencies..."
+"$APP_DIR/venv/bin/pip" install --upgrade pip
+"$APP_DIR/venv/bin/pip" install -r "$APP_DIR/requirements.txt"
+```
+
+**2. Updated `debian/etc/systemd/system/auto-stretch.service`:**
+   - Uses venv's Python interpreter
+   - Adds venv/bin to PATH
+
+```ini
+Environment="PATH=/opt/auto-stretch/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/opt/auto-stretch/venv/bin/python /opt/auto-stretch/app_start.py
+```
+
+**3. Updated `debian/DEBIAN/control`:**
+   - Added `python3-venv` dependency
+
+```
+Depends: python3 (>= 3.9), python3-pip, python3-venv, siril
+```
+
+**4. Updated `scripts/build-deb.sh`:**
+   - Removed outdated systemd service modification (no longer needed)
+
+### Benefits
+- ✅ Compliant with PEP 668 and Debian Trixie standards
+- ✅ Isolated dependencies (won't conflict with system packages)
+- ✅ Clean uninstall (entire venv removed with package)
+- ✅ Better security and stability
+- ✅ No --break-system-packages flag needed
+
+### After Installing Package
+The virtual environment is automatically created at:
+```
+/opt/auto-stretch/venv/
+```
+
+All Python dependencies are isolated within this venv.
+
+---
+
 ## Status: ✅ ALL ISSUES FIXED

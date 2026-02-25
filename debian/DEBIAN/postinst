@@ -24,10 +24,14 @@ case "$1" in
                 --comment "Auto Stretch Service User" "$APP_USER"
         fi
 
-        # Install Python dependencies
+        # Create virtual environment
+        echo "Creating Python virtual environment..."
+        python3 -m venv "$APP_DIR/venv"
+
+        # Install Python dependencies in virtual environment
         echo "Installing Python dependencies..."
-        pip3 install --break-system-packages -q -r "$APP_DIR/requirements.txt" 2>/dev/null || \
-        pip3 install -q -r "$APP_DIR/requirements.txt"
+        "$APP_DIR/venv/bin/pip" install --upgrade pip
+        "$APP_DIR/venv/bin/pip" install -r "$APP_DIR/requirements.txt"
 
         # Set proper ownership and permissions
         echo "Setting permissions..."

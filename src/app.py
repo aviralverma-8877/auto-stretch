@@ -365,4 +365,21 @@ def cleanup_file():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Read port from environment variable or config file, default to 5000
+    port = int(os.environ.get('APP_PORT', 5000))
+
+    # Try to read from config.env if environment variable not set
+    if port == 5000:
+        config_path = os.path.join(BASE_DIR, 'config.env')
+        if os.path.exists(config_path):
+            try:
+                with open(config_path, 'r') as f:
+                    for line in f:
+                        if line.startswith('APP_PORT='):
+                            port = int(line.split('=')[1].strip())
+                            break
+            except Exception as e:
+                print(f"Warning: Could not read config.env: {e}")
+
+    print(f"Starting Auto Stretch on port {port}...")
+    app.run(debug=False, host='0.0.0.0', port=port, threaded=True)

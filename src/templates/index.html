@@ -142,6 +142,11 @@
             <div id="wakeLockStatus" style="display: none; margin-top: 15px; color: #10b981; font-size: 0.9em;">
                 📱 Screen staying awake
             </div>
+            <div style="margin-top: 20px; text-align: center;">
+                <button type="button" class="btn btn-danger" id="cancelUploadBtn" onclick="cancelUpload()">
+                    ❌ Cancel Upload
+                </button>
+            </div>
         </div>
 
         <div class="loading-section" id="loadingSection" style="display: none;">
@@ -184,6 +189,7 @@
         let inputFileId = null;  // Track stored input file for reprocessing
         let originalFilename = null;
         let wakeLock = null;  // Screen wake lock for mobile devices
+        let currentUploadXHR = null;  // Current upload request (for cancellation)
 
         // Wake Lock API - Prevents phone from sleeping during upload
         async function requestWakeLock() {
@@ -236,6 +242,55 @@
                 }
             }
         });
+
+        // Disable/Enable file upload
+        function disableFileUpload() {
+            const uploadBox = document.getElementById('uploadBox');
+            const fileInput = document.getElementById('fileInput');
+
+            uploadBox.classList.add('disabled');
+            fileInput.disabled = true;
+
+            console.log('File upload disabled');
+        }
+
+        function enableFileUpload() {
+            const uploadBox = document.getElementById('uploadBox');
+            const fileInput = document.getElementById('fileInput');
+
+            uploadBox.classList.remove('disabled');
+            fileInput.disabled = false;
+
+            console.log('File upload enabled');
+        }
+
+        // Cancel upload function
+        function cancelUpload() {
+            if (currentUploadXHR) {
+                console.log('Canceling upload...');
+
+                // Abort the XHR request
+                currentUploadXHR.abort();
+                currentUploadXHR = null;
+
+                // Release wake lock
+                releaseWakeLock();
+
+                // Re-enable file upload
+                enableFileUpload();
+
+                // Hide upload progress
+                document.getElementById('uploadProgressSection').style.display = 'none';
+
+                // Show parameters section if file was selected
+                if (selectedFile) {
+                    parametersSection.style.display = 'block';
+                }
+
+                // Show cancellation message
+                showError('Upload canceled by user');
+            }
+        }
 
         // File input handling
         const fileInput = document.getElementById('fileInput');
@@ -347,6 +402,9 @@
             document.getElementById('errorSection').style.display = 'none';
             document.getElementById('resultsSection').style.display = 'none';
 
+            // Disable file upload during processing
+            disableFileUpload();
+
             // Show upload progress for new files (not reprocessing)
             if (!isReprocessing) {
                 document.getElementById('uploadProgressSection').style.display = 'block';
@@ -373,6 +431,7 @@
 
             // Use XMLHttpRequest for upload progress tracking
             const xhr = new XMLHttpRequest();
+            currentUploadXHR = xhr;  // Store for cancellation
             let uploadStartTime = Date.now();
             let lastLoaded = 0;
             let lastTime = Date.now();
@@ -413,6 +472,7 @@
 
             // Upload complete, start processing
             xhr.addEventListener('load', function() {
+                currentUploadXHR = null;  // Clear reference
                 document.getElementById('uploadProgressSection').style.display = 'none';
                 document.getElementById('loadingSection').style.display = 'block';
 
@@ -422,6 +482,9 @@
                 if (xhr.status === 200) {
                     const data = JSON.parse(xhr.responseText);
                     document.getElementById('loadingSection').style.display = 'none';
+
+                    // Re-enable file upload
+                    enableFileUpload();
 
                     if (data.error) {
                         showError(data.error);
@@ -446,6 +509,10 @@
                     }
                 } else {
                     document.getElementById('loadingSection').style.display = 'none';
+
+                    // Re-enable file upload on error
+                    enableFileUpload();
+
                     showError('Upload failed with status: ' + xhr.status);
                     parametersSection.style.display = 'block';
                 }
@@ -453,14 +520,25 @@
 
             // Handle errors
             xhr.addEventListener('error', function() {
+                currentUploadXHR = null;  // Clear reference
                 document.getElementById('uploadProgressSection').style.display = 'none';
                 document.getElementById('loadingSection').style.display = 'none';
 
                 // Release wake lock on error
                 releaseWakeLock();
 
+                // Re-enable file upload on error
+                enableFileUpload();
+
                 showError('Network error occurred during upload');
                 parametersSection.style.display = 'block';
+            });
+
+            // Handle abort (when user cancels)
+            xhr.addEventListener('abort', function() {
+                currentUploadXHR = null;  // Clear reference
+                console.log('Upload aborted by user');
+                // UI cleanup is handled by cancelUpload() function
             });
 
             // Send request

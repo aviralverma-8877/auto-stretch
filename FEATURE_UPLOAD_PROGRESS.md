@@ -216,6 +216,47 @@ BUFFER_SIZE = 8 * 1024 * 1024  # 8MB buffer
 
 *Note: Actual speeds vary by network connection and disk I/O*
 
+## Upload Cancellation
+
+### User Can Cancel Upload
+
+Users can now cancel an in-progress upload by clicking the **"❌ Cancel Upload"** button.
+
+**When Canceled:**
+- Upload is immediately aborted
+- Progress bar disappears
+- Wake lock is released (if active on mobile)
+- File upload button is re-enabled
+- User can select a new file or try again
+
+**Clean Abort:**
+- Network request is properly terminated
+- No partial files left on server
+- All resources are cleaned up
+- User sees confirmation message: "Upload canceled by user"
+
+## Upload Button Disabling
+
+### Prevents Duplicate Uploads
+
+While an upload is in progress, the file selection button is automatically disabled to prevent:
+- Multiple simultaneous uploads
+- User confusion
+- Server overload
+- Interrupted uploads
+
+**Visual Feedback:**
+- Upload box becomes semi-transparent
+- Gray overlay with message: "⏳ Upload in progress..."
+- Cursor changes to "not-allowed"
+- Cannot click or interact with upload area
+
+**Automatic Re-enabling:**
+- Upload completes successfully → Button re-enabled
+- Upload fails with error → Button re-enabled
+- Network error occurs → Button re-enabled
+- User cancels upload → Button re-enabled
+
 ## User Benefits
 
 ✅ **Visual Feedback** - See exactly what's happening
@@ -224,6 +265,10 @@ BUFFER_SIZE = 8 * 1024 * 1024  # 8MB buffer
 ✅ **Better UX** - No more wondering if upload is stuck
 ✅ **Faster Uploads** - 20% speed improvement
 ✅ **No Timeouts** - Progress indicates activity
+✅ **No Duplicate Uploads** - Button disabled during upload
+✅ **Clear Status** - Visual indicator shows upload is locked
+✅ **User Control** - Can cancel upload anytime
+✅ **Clean Abort** - Proper cleanup when canceled
 
 ## Technical Benefits
 

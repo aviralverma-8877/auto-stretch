@@ -105,9 +105,11 @@ Write-Host "Installing service..." -ForegroundColor Green
 # Set environment variable for port
 $env:APP_PORT = $Port
 
-# Install service - NSSM will handle path quoting
-Write-Host "Command: $nssmPath install $ServiceName $pythonExe $appScript" -ForegroundColor Gray
-& "$nssmPath" install $ServiceName $pythonExe $appScript
+# Install service - Install with ONLY the Python executable
+# NSSM requires: install <servicename> <executable>
+# Then set parameters separately with AppParameters
+Write-Host "Installing service with Python executable only..." -ForegroundColor Gray
+& "$nssmPath" install $ServiceName $pythonExe
 if ($LASTEXITCODE -ne 0) {
     Write-Host "ERROR: Failed to install service! Exit code: $LASTEXITCODE" -ForegroundColor Red
     Write-Host "Try removing existing service first if it exists" -ForegroundColor Yellow
@@ -116,6 +118,12 @@ if ($LASTEXITCODE -ne 0) {
 
 # Configure service
 Write-Host "Configuring service..." -ForegroundColor Green
+
+# CRITICAL: Set the app.py script as a parameter (not part of install command)
+Write-Host "Setting application parameters (app.py)..." -ForegroundColor Gray
+& "$nssmPath" set $ServiceName AppParameters $appScript
+
+# Set other configuration
 & "$nssmPath" set $ServiceName DisplayName $ServiceDisplayName
 & "$nssmPath" set $ServiceName Description $ServiceDescription
 & "$nssmPath" set $ServiceName AppDirectory $InstallDir

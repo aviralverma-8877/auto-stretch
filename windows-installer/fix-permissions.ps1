@@ -63,8 +63,9 @@ Write-Host "Reinstalling service with port $port..." -ForegroundColor Yellow
 $pythonExe = "$InstallDir\venv\Scripts\python.exe"
 $appScript = "$InstallDir\app.py"
 
-# Install service
-& "$InstallDir\nssm.exe" install AutoStretch $pythonExe $appScript
+# Install service with ONLY the Python executable (CRITICAL FIX)
+Write-Host "Installing service with Python executable..." -ForegroundColor Gray
+& "$InstallDir\nssm.exe" install AutoStretch $pythonExe
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "ERROR: Failed to install service!" -ForegroundColor Red
@@ -73,6 +74,11 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 # Configure service
+Write-Host "Setting application parameters..." -ForegroundColor Gray
+
+# CRITICAL: Set app.py as AppParameters (not as part of install command)
+& "$InstallDir\nssm.exe" set AutoStretch AppParameters $appScript
+
 & "$InstallDir\nssm.exe" set AutoStretch DisplayName "Auto Stretch - Astronomy Image Processor"
 & "$InstallDir\nssm.exe" set AutoStretch Description "Flask-based web application for processing astronomical TIFF images"
 & "$InstallDir\nssm.exe" set AutoStretch AppDirectory $InstallDir

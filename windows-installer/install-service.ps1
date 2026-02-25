@@ -58,13 +58,13 @@ if (-not (Test-Path $logsDir)) {
 # Grant permissions to Local System account (service runs as SYSTEM)
 Write-Host "Setting file permissions..." -ForegroundColor Green
 try {
-    # Grant Read & Execute permissions to SYSTEM account
+    # Grant Full Control to SYSTEM account (needed for logs and temp files)
     $acl = Get-Acl $InstallDir
     $systemSid = New-Object System.Security.Principal.SecurityIdentifier("S-1-5-18")
     $systemAccount = $systemSid.Translate([System.Security.Principal.NTAccount])
     $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule(
         $systemAccount,
-        "ReadAndExecute",
+        "FullControl",
         "ContainerInherit,ObjectInherit",
         "None",
         "Allow"
@@ -74,8 +74,17 @@ try {
 
     Write-Host "Permissions set successfully for SYSTEM account" -ForegroundColor Green
 } catch {
-    Write-Host "Warning: Could not set permissions: $($_.Exception.Message)" -ForegroundColor Yellow
-    Write-Host "Service may fail to start. Try running: icacls `"$InstallDir`" /grant SYSTEM:RX /T" -ForegroundColor Yellow
+    Write-Host "Warning: Could not set permissions via PowerShell: $($_.Exception.Message)" -ForegroundColor Yellow
+    Write-Host "Trying icacls command..." -ForegroundColor Yellow
+
+    # Fallback to icacls
+    $icaclsResult = & icacls "`"$InstallDir`"" /grant "NT AUTHORITY\SYSTEM:(OI)(CI)F" /T /Q 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "Permissions set successfully via icacls" -ForegroundColor Green
+    } else {
+        Write-Host "Failed to set permissions. Service may not start." -ForegroundColor Red
+        Write-Host "Manually run: icacls `"$InstallDir`" /grant `"NT AUTHORITY\SYSTEM:(OI)(CI)F`" /T" -ForegroundColor Yellow
+    }
 }
 
 # Check if service already exists
@@ -96,10 +105,12 @@ Write-Host "Installing service..." -ForegroundColor Green
 # Set environment variable for port
 $env:APP_PORT = $Port
 
-# Install service with properly quoted paths
-& "$nssmPath" install $ServiceName "`"$pythonExe`"" "`"$appScript`""
+# Install service - NSSM will handle path quoting
+Write-Host "Command: $nssmPath install $ServiceName $pythonExe $appScript" -ForegroundColor Gray
+& "$nssmPath" install $ServiceName $pythonExe $appScript
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "ERROR: Failed to install service!" -ForegroundColor Red
+    Write-Host "ERROR: Failed to install service! Exit code: $LASTEXITCODE" -ForegroundColor Red
+    Write-Host "Try removing existing service first if it exists" -ForegroundColor Yellow
     exit 1
 }
 

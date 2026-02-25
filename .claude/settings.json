@@ -14,7 +14,8 @@
       "Bash(powershell -ExecutionPolicy Bypass -File validate-scripts.ps1:*)",
       "Bash(powershell -ExecutionPolicy Bypass -File download-nssm.ps1)",
       "Bash(powershell -Command \"Get-Service AutoStretch | Select-Object Name, Status, StartType\")",
-      "Bash(powershell -Command \"Test-Path ''C:\\\\Program Files\\\\AutoStretch''\")"
+      "Bash(powershell -Command \"Test-Path ''C:\\\\Program Files\\\\AutoStretch''\")",
+      "Bash(powershell -Command \"icacls ''C:\\\\Program Files\\\\AutoStretch'' /grant ''NT AUTHORITY\\\\SYSTEM:\\(OI\\)\\(CI\\)F'' /T /Q\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\aviralv\\Downloads\\auto-streach"

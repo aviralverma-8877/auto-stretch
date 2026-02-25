@@ -206,7 +206,7 @@ Section "Install"
 
   ; Grant permissions to SYSTEM account (required for service)
   DetailPrint "Setting file permissions for service..."
-  nsExec::ExecToLog 'icacls "$INSTDIR" /grant SYSTEM:(OI)(CI)RX /T /Q'
+  nsExec::ExecToLog 'icacls "$INSTDIR" /grant "NT AUTHORITY\SYSTEM:(OI)(CI)F" /T /Q'
 
   ; Install and configure service
   DetailPrint "Installing Windows service..."

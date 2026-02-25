@@ -165,13 +165,7 @@ Section "Install"
   ; Copy bundled Python
   DetailPrint "Installing bundled Python..."
   SetOutPath "$INSTDIR\python"
-  IfFileExists "python-embed\python.exe" 0 python_missing
-    File /r "python-embed\*.*"
-    Goto python_done
-  python_missing:
-    MessageBox MB_OK|MB_ICONSTOP "Bundled Python not found!$\n$\nThe installer was not built correctly.$\nPlease run: download-python.ps1 before building the installer."
-    Abort
-  python_done:
+  File /r "python-embed\*"
 
   SetOutPath "$INSTDIR"
 

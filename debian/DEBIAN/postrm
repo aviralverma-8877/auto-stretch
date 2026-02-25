@@ -1,0 +1,45 @@
+#!/bin/bash
+set -e
+
+PACKAGE="auto-stretch"
+APP_USER="auto-stretch"
+APP_GROUP="auto-stretch"
+APP_DIR="/opt/auto-stretch"
+
+case "$1" in
+    purge)
+        echo "Purging $PACKAGE..."
+
+        # Reload systemd daemon
+        systemctl daemon-reload
+
+        # Remove the user and group
+        if getent passwd "$APP_USER" > /dev/null 2>&1; then
+            echo "Removing user $APP_USER..."
+            userdel "$APP_USER" 2>/dev/null || true
+        fi
+
+        if getent group "$APP_GROUP" > /dev/null 2>&1; then
+            echo "Removing group $APP_GROUP..."
+            groupdel "$APP_GROUP" 2>/dev/null || true
+        fi
+
+        # Remove application directory if it still exists
+        if [ -d "$APP_DIR" ]; then
+            echo "Removing application directory..."
+            rm -rf "$APP_DIR"
+        fi
+
+        echo "$PACKAGE has been completely removed."
+        ;;
+
+    remove|upgrade|failed-upgrade|abort-install|abort-upgrade|disappear)
+        ;;
+
+    *)
+        echo "postrm called with unknown argument \`$1'" >&2
+        exit 1
+        ;;
+esac
+
+exit 0

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl:*)",
+      "Bash(pip install:*)",
+      "Read(//c/Users/aviralv/Downloads/auto-streach/**)",
+      "Bash(dir:*)",
+      "Bash(findstr:*)",
+      "Bash(chmod:*)",
+      "Read(//tmp/claude/c--Users-aviralv-Downloads-auto-streach/tasks/**)"
+    ]
+  }
+}

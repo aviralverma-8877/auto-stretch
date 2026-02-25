@@ -1,0 +1,21 @@
+Package: auto-stretch
+Version: 1.0.0
+Section: science
+Priority: optional
+Architecture: all
+Depends: python3 (>= 3.9), python3-pip, siril
+Maintainer: Auto Stretch Team <noreply@example.com>
+Description: Advanced TIFF Image Stretching & Color Enhancement for Astronomy
+ Auto Stretch is a Flask-based web application designed for processing
+ astronomical TIFF images. It provides advanced stretching algorithms,
+ color enhancement, and configurable parameters for astrophotography.
+ .
+ Features:
+  - TIFF image upload and processing
+  - Configurable gamma correction and tone curves
+  - Color balance adjustments
+  - Saturation boost controls
+  - Optional Siril pre-processing integration
+  - Web-based interface with astronomy theme
+  - Runs as a systemd service on port 5000
+Homepage: https://github.com/example/auto-stretch

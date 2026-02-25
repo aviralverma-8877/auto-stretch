@@ -1,0 +1,61 @@
+# Debian package build artifacts
+*.deb
+debian/opt/
+Dockerfile.build
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Flask
+instance/
+.webassets-cache
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+flask_output.log
+
+# Temporary files
+debug_*.png
+debug_*.py
+*.tif.tmp
+*.tiff.tmp
+
+# Test files (keep orion.tif if it's a sample)
+*-result.tif
+*-result.png
+*-basic.tif
+result.tif
+stretch.ssf
+
+# OS specific
+Thumbs.db

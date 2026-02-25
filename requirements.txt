@@ -1,0 +1,6 @@
+Flask==3.0.0
+Werkzeug==3.0.1
+Pillow==10.2.0
+numpy==1.26.3
+tifffile>=2024.8.0
+imagecodecs>=2024.6.0

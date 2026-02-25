@@ -1,0 +1,82 @@
+#!/bin/bash
+set -e
+
+# Package name
+PACKAGE="auto-stretch"
+APP_DIR="/opt/auto-stretch"
+APP_USER="auto-stretch"
+APP_GROUP="auto-stretch"
+
+case "$1" in
+    configure)
+        echo "Configuring $PACKAGE..."
+
+        # Create system user and group if they don't exist
+        if ! getent group "$APP_GROUP" > /dev/null 2>&1; then
+            echo "Creating group $APP_GROUP..."
+            groupadd --system "$APP_GROUP"
+        fi
+
+        if ! getent passwd "$APP_USER" > /dev/null 2>&1; then
+            echo "Creating user $APP_USER..."
+            useradd --system --gid "$APP_GROUP" --home-dir "$APP_DIR" \
+                --no-create-home --shell /usr/sbin/nologin \
+                --comment "Auto Stretch Service User" "$APP_USER"
+        fi
+
+        # Install Python dependencies
+        echo "Installing Python dependencies..."
+        pip3 install --break-system-packages -q -r "$APP_DIR/requirements.txt" 2>/dev/null || \
+        pip3 install -q -r "$APP_DIR/requirements.txt"
+
+        # Set proper ownership and permissions
+        echo "Setting permissions..."
+        chown -R "$APP_USER:$APP_GROUP" "$APP_DIR"
+        chmod -R 755 "$APP_DIR"
+        chmod 644 "$APP_DIR"/*.py
+        chmod 644 "$APP_DIR/requirements.txt"
+
+        # Reload systemd daemon
+        echo "Reloading systemd daemon..."
+        systemctl daemon-reload
+
+        # Enable and start the service
+        echo "Enabling and starting $PACKAGE service..."
+        systemctl enable auto-stretch.service
+        systemctl start auto-stretch.service
+
+        # Display status
+        sleep 2
+        if systemctl is-active --quiet auto-stretch.service; then
+            echo ""
+            echo "=============================================="
+            echo "Auto Stretch has been installed successfully!"
+            echo "=============================================="
+            echo ""
+            echo "Service Status: RUNNING"
+            echo "Access the web interface at: http://localhost:5000"
+            echo ""
+            echo "Useful commands:"
+            echo "  - Check status: sudo systemctl status auto-stretch"
+            echo "  - View logs: sudo journalctl -u auto-stretch -f"
+            echo "  - Restart: sudo systemctl restart auto-stretch"
+            echo "  - Stop: sudo systemctl stop auto-stretch"
+            echo ""
+        else
+            echo ""
+            echo "WARNING: Service failed to start. Check logs:"
+            echo "  sudo journalctl -u auto-stretch -n 50"
+            echo ""
+        fi
+        ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+        ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+        ;;
+esac
+
+exit 0

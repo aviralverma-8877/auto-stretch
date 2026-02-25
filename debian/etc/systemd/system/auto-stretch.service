@@ -1,0 +1,28 @@
+[Unit]
+Description=Auto Stretch - Astronomy TIFF Image Processor
+After=network.target
+Documentation=https://github.com/example/auto-stretch
+
+[Service]
+Type=simple
+User=auto-stretch
+Group=auto-stretch
+WorkingDirectory=/opt/auto-stretch
+Environment="PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="PYTHONUNBUFFERED=1"
+ExecStart=/usr/bin/python3 /opt/auto-stretch/app.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=auto-stretch
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/tmp
+
+[Install]
+WantedBy=multi-user.target

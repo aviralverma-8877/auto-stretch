@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌌 Auto Stretch - Astronomy Image Processor</title>
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌟 Auto Stretch</h1>
+            <p>Advanced TIFF Image Stretching & Color Enhancement</p>
+        </header>
+
+        <div class="upload-section">
+            <div class="upload-box" id="uploadBox">
+                <input type="file" id="fileInput" accept=".tif,.tiff" hidden>
+                <div class="upload-content">
+                    <div class="upload-icon">📁</div>
+                    <h2>Upload TIFF Image</h2>
+                    <p>Click or drag and drop your .tif or .tiff file here</p>
+                    <button type="button" class="btn btn-primary">
+                        Select File
+                    </button>
+                </div>
+                <div id="fileName" class="file-name"></div>
+            </div>
+        </div>
+
+        <div class="parameters-section" id="parametersSection" style="display: none;">
+            <h2>Processing Parameters</h2>
+
+            <div class="param-group">
+                <h3>Gamma Correction</h3>
+                <div class="param-row">
+                    <label>
+                        <span>Red Channel Gamma <span class="param-value" id="gamma_red_value">0.70</span></span>
+                        <input type="range" id="gamma_red" value="0.7" step="0.05" min="0.1" max="2.0" oninput="updateValue('gamma_red')">
+                    </label>
+                    <label>
+                        <span>Green Channel Gamma <span class="param-value" id="gamma_green_value">0.80</span></span>
+                        <input type="range" id="gamma_green" value="0.8" step="0.05" min="0.1" max="2.0" oninput="updateValue('gamma_green')">
+                    </label>
+                    <label>
+                        <span>Blue Channel Gamma <span class="param-value" id="gamma_blue_value">0.75</span></span>
+                        <input type="range" id="gamma_blue" value="0.75" step="0.05" min="0.1" max="2.0" oninput="updateValue('gamma_blue')">
+                    </label>
+                </div>
+            </div>
+
+            <div class="param-group">
+                <h3>Color Balance</h3>
+                <div class="param-row">
+                    <label>
+                        <span>Green Multiplier <span class="param-value" id="green_multiplier_value">0.93</span></span>
+                        <input type="range" id="green_multiplier" value="0.93" step="0.01" min="0.5" max="1.5" oninput="updateValue('green_multiplier')">
+                    </label>
+                    <label>
+                        <span>Blue Multiplier <span class="param-value" id="blue_multiplier_value">1.08</span></span>
+                        <input type="range" id="blue_multiplier" value="1.08" step="0.01" min="0.5" max="1.5" oninput="updateValue('blue_multiplier')">
+                    </label>
+                </div>
+            </div>
+
+            <div class="param-group">
+                <h3>Tone Curve</h3>
+                <div class="param-row">
+                    <label>
+                        <span>Dark Threshold <span class="param-value" id="dark_threshold_value">0.15</span></span>
+                        <input type="range" id="dark_threshold" value="0.15" step="0.01" min="0.0" max="0.5" oninput="updateValue('dark_threshold')">
+                    </label>
+                    <label>
+                        <span>Dark Multiplier <span class="param-value" id="dark_multiplier_value">0.30</span></span>
+                        <input type="range" id="dark_multiplier" value="0.3" step="0.1" min="0.0" max="1.0" oninput="updateValue('dark_multiplier')">
+                    </label>
+                </div>
+                <div class="param-row">
+                    <label>
+                        <span>Mid Threshold <span class="param-value" id="mid_threshold_value">0.40</span></span>
+                        <input type="range" id="mid_threshold" value="0.4" step="0.05" min="0.1" max="0.8" oninput="updateValue('mid_threshold')">
+                    </label>
+                    <label>
+                        <span>Mid-tone Boost <span class="param-value" id="mid_boost_value">1.50</span></span>
+                        <input type="range" id="mid_boost" value="1.5" step="0.1" min="0.5" max="3.0" oninput="updateValue('mid_boost')">
+                    </label>
+                </div>
+                <div class="param-row">
+                    <label>
+                        <span>Bright Multiplier <span class="param-value" id="bright_multiplier_value">1.10</span></span>
+                        <input type="range" id="bright_multiplier" value="1.1" step="0.05" min="0.8" max="2.0" oninput="updateValue('bright_multiplier')">
+                    </label>
+                </div>
+            </div>
+
+            <div class="param-group">
+                <h3>Saturation</h3>
+                <div class="param-row">
+                    <label>
+                        <span>Saturation Boost <span class="param-value" id="saturation_boost_value">1.00</span></span>
+                        <input type="range" id="saturation_boost" value="1.0" step="0.1" min="0.0" max="3.0" oninput="updateValue('saturation_boost')">
+                    </label>
+                </div>
+            </div>
+
+            <div class="param-group">
+                <h3>Advanced Options</h3>
+                <div class="param-row">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="use_siril">
+                        <span>Use Siril pre-processing (requires siril-cli installed)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button type="button" class="btn btn-secondary" onclick="resetParameters()">
+                    Reset to Defaults
+                </button>
+                <button type="button" class="btn btn-success" id="processBtn" onclick="processImage()">
+                    🚀 Auto Stretch
+                </button>
+            </div>
+        </div>
+
+        <div class="loading-section" id="loadingSection" style="display: none;">
+            <div class="spinner"></div>
+            <p>Processing your image... This may take a moment.</p>
+        </div>
+
+        <div class="results-section" id="resultsSection" style="display: none;">
+            <h2>✨ Results</h2>
+            <div class="preview-container">
+                <img id="previewImage" src="" alt="Processed Image Preview">
+            </div>
+            <div style="text-align: center; margin: 15px 0; color: #a5b4fc; font-size: 0.95em;">
+                💡 <strong>Tip:</strong> Adjust parameters above and click "Reprocess" to refine the result!
+            </div>
+            <div class="button-group">
+                <button type="button" class="btn btn-primary" onclick="downloadImage()">
+                    💾 Download TIFF
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="resetApp()">
+                    🔄 Process Another Image
+                </button>
+            </div>
+        </div>
+
+        <div class="error-section" id="errorSection" style="display: none;">
+            <div class="error-message">
+                <h3>❌ Error</h3>
+                <p id="errorMessage"></p>
+                <button type="button" class="btn btn-secondary" onclick="resetApp()">
+                    Try Again
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+        let downloadUrl = null;
+        let inputFileId = null;  // Track stored input file for reprocessing
+        let originalFilename = null;
+
+        // File input handling
+        const fileInput = document.getElementById('fileInput');
+        const uploadBox = document.getElementById('uploadBox');
+        const fileName = document.getElementById('fileName');
+        const parametersSection = document.getElementById('parametersSection');
+
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // Drag and drop
+        uploadBox.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadBox.classList.add('dragover');
+        });
+
+        uploadBox.addEventListener('dragleave', () => {
+            uploadBox.classList.remove('dragover');
+        });
+
+        uploadBox.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadBox.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileSelect();
+            }
+        });
+
+        uploadBox.addEventListener('click', (e) => {
+            if (e.target === uploadBox || e.target.closest('.upload-content')) {
+                fileInput.click();
+            }
+        });
+
+        function handleFileSelect() {
+            const file = fileInput.files[0];
+            if (file) {
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (ext === 'tif' || ext === 'tiff') {
+                    // Clean up previous file if exists
+                    if (inputFileId) {
+                        fetch('/cleanup', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ input_file: inputFileId })
+                        }).catch(error => console.error('Cleanup error:', error));
+                    }
+
+                    // Reset state for new file
+                    selectedFile = file;
+                    inputFileId = null;
+                    originalFilename = null;
+                    downloadUrl = null;
+
+                    fileName.textContent = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                    fileName.style.display = 'block';
+                    parametersSection.style.display = 'block';
+                    uploadBox.classList.add('file-selected');
+
+                    // Reset button text
+                    const processBtn = document.getElementById('processBtn');
+                    processBtn.textContent = '🚀 Auto Stretch';
+                    processBtn.onclick = () => processImage(false);
+
+                    // Hide results if showing previous results
+                    document.getElementById('resultsSection').style.display = 'none';
+                } else {
+                    alert('Please select a valid TIFF file (.tif or .tiff)');
+                    fileInput.value = '';
+                }
+            }
+        }
+
+        function processImage(isReprocessing = false) {
+            if (!selectedFile && !inputFileId) {
+                alert('Please select a file first');
+                return;
+            }
+
+            const formData = new FormData();
+
+            // If reprocessing, use stored file; otherwise upload new file
+            if (isReprocessing && inputFileId) {
+                formData.append('input_file', inputFileId);
+            } else {
+                formData.append('file', selectedFile);
+            }
+
+            // Add all parameters
+            const params = [
+                'gamma_red', 'gamma_green', 'gamma_blue',
+                'green_multiplier', 'blue_multiplier',
+                'dark_threshold', 'dark_multiplier',
+                'mid_threshold', 'mid_boost', 'bright_multiplier',
+                'saturation_boost'
+            ];
+
+            params.forEach(param => {
+                formData.append(param, document.getElementById(param).value);
+            });
+
+            formData.append('use_siril', document.getElementById('use_siril').checked);
+
+            // Show loading
+            parametersSection.style.display = 'none';
+            document.getElementById('loadingSection').style.display = 'block';
+            document.getElementById('errorSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'none';
+
+            // Choose endpoint based on whether this is reprocessing
+            const endpoint = isReprocessing ? '/reprocess' : '/upload';
+
+            // Send request
+            fetch(endpoint, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loadingSection').style.display = 'none';
+
+                if (data.error) {
+                    showError(data.error);
+                    parametersSection.style.display = 'block';
+                } else {
+                    // Store input file info for reprocessing
+                    inputFileId = data.input_file;
+                    originalFilename = data.original_filename;
+
+                    // Show results
+                    document.getElementById('previewImage').src = data.preview_url;
+                    downloadUrl = data.download_url;
+
+                    // Show both parameters and results for easy reprocessing
+                    parametersSection.style.display = 'block';
+                    document.getElementById('resultsSection').style.display = 'block';
+
+                    // Update button text to indicate reprocessing is available
+                    const processBtn = document.getElementById('processBtn');
+                    processBtn.textContent = '🔄 Reprocess with New Parameters';
+                    processBtn.onclick = () => processImage(true);
+                }
+            })
+            .catch(error => {
+                document.getElementById('loadingSection').style.display = 'none';
+                showError('An error occurred: ' + error.message);
+                parametersSection.style.display = 'block';
+            });
+        }
+
+        function downloadImage() {
+            if (downloadUrl) {
+                window.location.href = downloadUrl;
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorSection').style.display = 'block';
+        }
+
+        function updateValue(paramId) {
+            const input = document.getElementById(paramId);
+            const valueDisplay = document.getElementById(paramId + '_value');
+            const value = parseFloat(input.value);
+
+            // Format based on the parameter's step value
+            const step = parseFloat(input.step);
+            let decimals = 2;
+            if (step >= 0.1) decimals = 1;
+            if (step >= 1) decimals = 0;
+
+            valueDisplay.textContent = value.toFixed(decimals);
+        }
+
+        function resetParameters() {
+            document.getElementById('gamma_red').value = 0.7;
+            document.getElementById('gamma_green').value = 0.8;
+            document.getElementById('gamma_blue').value = 0.75;
+            document.getElementById('green_multiplier').value = 0.93;
+            document.getElementById('blue_multiplier').value = 1.08;
+            document.getElementById('dark_threshold').value = 0.15;
+            document.getElementById('dark_multiplier').value = 0.3;
+            document.getElementById('mid_threshold').value = 0.4;
+            document.getElementById('mid_boost').value = 1.5;
+            document.getElementById('bright_multiplier').value = 1.1;
+            document.getElementById('saturation_boost').value = 1.0;
+            document.getElementById('use_siril').checked = false;
+
+            // Update all displayed values
+            updateValue('gamma_red');
+            updateValue('gamma_green');
+            updateValue('gamma_blue');
+            updateValue('green_multiplier');
+            updateValue('blue_multiplier');
+            updateValue('dark_threshold');
+            updateValue('dark_multiplier');
+            updateValue('mid_threshold');
+            updateValue('mid_boost');
+            updateValue('bright_multiplier');
+            updateValue('saturation_boost');
+        }
+
+        function resetApp() {
+            // Clean up stored file on server
+            if (inputFileId) {
+                fetch('/cleanup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ input_file: inputFileId })
+                }).catch(error => console.error('Cleanup error:', error));
+            }
+
+            // Reset all state
+            selectedFile = null;
+            downloadUrl = null;
+            inputFileId = null;
+            originalFilename = null;
+            fileInput.value = '';
+            fileName.style.display = 'none';
+            fileName.textContent = '';
+            uploadBox.classList.remove('file-selected');
+            parametersSection.style.display = 'none';
+            document.getElementById('loadingSection').style.display = 'none';
+            document.getElementById('errorSection').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'none';
+            resetParameters();
+
+            // Reset button text and handler
+            const processBtn = document.getElementById('processBtn');
+            processBtn.textContent = '🚀 Auto Stretch';
+            processBtn.onclick = () => processImage(false);
+        }
+
+        // Initialize all slider values on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateValue('gamma_red');
+            updateValue('gamma_green');
+            updateValue('gamma_blue');
+            updateValue('green_multiplier');
+            updateValue('blue_multiplier');
+            updateValue('dark_threshold');
+            updateValue('dark_multiplier');
+            updateValue('mid_threshold');
+            updateValue('mid_boost');
+            updateValue('bright_multiplier');
+            updateValue('saturation_boost');
+        });
+    </script>
+</body>
+</html>

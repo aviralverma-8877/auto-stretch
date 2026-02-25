@@ -1,0 +1,31 @@
+#!/bin/bash
+set -e
+
+PACKAGE="auto-stretch"
+
+case "$1" in
+    remove|upgrade|deconfigure)
+        echo "Stopping $PACKAGE service..."
+
+        # Stop the service if it's running
+        if systemctl is-active --quiet auto-stretch.service; then
+            systemctl stop auto-stretch.service
+        fi
+
+        # Disable the service if we're removing (not upgrading)
+        if [ "$1" = "remove" ]; then
+            echo "Disabling $PACKAGE service..."
+            systemctl disable auto-stretch.service
+        fi
+        ;;
+
+    failed-upgrade)
+        ;;
+
+    *)
+        echo "prerm called with unknown argument \`$1'" >&2
+        exit 1
+        ;;
+esac
+
+exit 0

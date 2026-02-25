@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./auto-streach.bat)",
+      "Bash(ls:*)",
+      "Bash(siril-cli:*)",
+      "Bash(echo:*)",
+      "Bash(convert:*)",
+      "Bash(cmd //c auto-streach.bat)"
+    ]
+  }
+}

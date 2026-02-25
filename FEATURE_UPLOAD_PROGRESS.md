@@ -303,6 +303,17 @@ samples/orion.tif (210MB)
 | `src/static/css/style.css` | Styling | Added progress bar CSS & animations |
 | `src/app.py` | Backend | Added chunked streaming & buffer config |
 
+## Related Features
+
+### Wake Lock (Prevent Phone Sleep)
+
+See [FEATURE_WAKE_LOCK.md](FEATURE_WAKE_LOCK.md) for details on how the app prevents phones from sleeping during upload.
+
+When uploading on mobile:
+- Screen stays awake automatically
+- Visual indicator: "📱 Screen staying awake"
+- No manual screen tapping needed
+
 ## Status
 
 ✅ **Fully Implemented and Tested**
@@ -312,5 +323,6 @@ The upload progress feature is complete and ready for use. Users will now see:
 - Upload speed in MB/s
 - Data transferred (MB)
 - Clear separation between upload and processing phases
+- Wake lock indicator on mobile devices
 
 Upload speeds improved by ~20% through optimized file I/O with 8MB buffer chunks.

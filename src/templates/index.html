@@ -139,6 +139,9 @@
                 <span id="uploadSpeed"></span>
                 <span id="uploadSize"></span>
             </div>
+            <div id="wakeLockStatus" style="display: none; margin-top: 15px; color: #10b981; font-size: 0.9em;">
+                📱 Screen staying awake
+            </div>
         </div>
 
         <div class="loading-section" id="loadingSection" style="display: none;">
@@ -180,6 +183,59 @@
         let downloadUrl = null;
         let inputFileId = null;  // Track stored input file for reprocessing
         let originalFilename = null;
+        let wakeLock = null;  // Screen wake lock for mobile devices
+
+        // Wake Lock API - Prevents phone from sleeping during upload
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('Wake Lock activated - screen will stay awake during upload');
+
+                    // Re-acquire wake lock if page becomes visible again
+                    wakeLock.addEventListener('release', () => {
+                        console.log('Wake Lock released');
+                    });
+
+                    return true;
+                } else {
+                    console.log('Wake Lock API not supported on this device');
+                    return false;
+                }
+            } catch (err) {
+                console.error('Failed to acquire wake lock:', err);
+                return false;
+            }
+        }
+
+        async function releaseWakeLock() {
+            if (wakeLock !== null) {
+                try {
+                    await wakeLock.release();
+                    wakeLock = null;
+                    console.log('Wake Lock released');
+
+                    // Hide wake lock indicator
+                    const wakeLockStatus = document.getElementById('wakeLockStatus');
+                    if (wakeLockStatus) {
+                        wakeLockStatus.style.display = 'none';
+                    }
+                } catch (err) {
+                    console.error('Failed to release wake lock:', err);
+                }
+            }
+        }
+
+        // Re-acquire wake lock when page becomes visible (e.g., user switches back to tab)
+        document.addEventListener('visibilitychange', async () => {
+            if (wakeLock !== null && document.visibilityState === 'visible') {
+                // Only re-acquire if we're currently uploading
+                const uploadSection = document.getElementById('uploadProgressSection');
+                if (uploadSection && uploadSection.style.display !== 'none') {
+                    await requestWakeLock();
+                }
+            }
+        });
 
         // File input handling
         const fileInput = document.getElementById('fileInput');
@@ -295,6 +351,18 @@
             if (!isReprocessing) {
                 document.getElementById('uploadProgressSection').style.display = 'block';
                 document.getElementById('loadingSection').style.display = 'none';
+
+                // Request wake lock to keep screen on during upload (mobile devices)
+                requestWakeLock().then(acquired => {
+                    if (acquired) {
+                        console.log('📱 Screen will stay awake during upload');
+                        // Show wake lock indicator
+                        const wakeLockStatus = document.getElementById('wakeLockStatus');
+                        if (wakeLockStatus) {
+                            wakeLockStatus.style.display = 'block';
+                        }
+                    }
+                });
             } else {
                 document.getElementById('uploadProgressSection').style.display = 'none';
                 document.getElementById('loadingSection').style.display = 'block';
@@ -348,6 +416,9 @@
                 document.getElementById('uploadProgressSection').style.display = 'none';
                 document.getElementById('loadingSection').style.display = 'block';
 
+                // Release wake lock after upload completes
+                releaseWakeLock();
+
                 if (xhr.status === 200) {
                     const data = JSON.parse(xhr.responseText);
                     document.getElementById('loadingSection').style.display = 'none';
@@ -384,6 +455,10 @@
             xhr.addEventListener('error', function() {
                 document.getElementById('uploadProgressSection').style.display = 'none';
                 document.getElementById('loadingSection').style.display = 'none';
+
+                // Release wake lock on error
+                releaseWakeLock();
+
                 showError('Network error occurred during upload');
                 parametersSection.style.display = 'block';
             });

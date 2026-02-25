@@ -55,6 +55,29 @@ if (-not (Test-Path $logsDir)) {
     New-Item -ItemType Directory -Path $logsDir | Out-Null
 }
 
+# Grant permissions to Local System account (service runs as SYSTEM)
+Write-Host "Setting file permissions..." -ForegroundColor Green
+try {
+    # Grant Read & Execute permissions to SYSTEM account
+    $acl = Get-Acl $InstallDir
+    $systemSid = New-Object System.Security.Principal.SecurityIdentifier("S-1-5-18")
+    $systemAccount = $systemSid.Translate([System.Security.Principal.NTAccount])
+    $accessRule = New-Object System.Security.AccessControl.FileSystemAccessRule(
+        $systemAccount,
+        "ReadAndExecute",
+        "ContainerInherit,ObjectInherit",
+        "None",
+        "Allow"
+    )
+    $acl.SetAccessRule($accessRule)
+    Set-Acl -Path $InstallDir -AclObject $acl
+
+    Write-Host "Permissions set successfully for SYSTEM account" -ForegroundColor Green
+} catch {
+    Write-Host "Warning: Could not set permissions: $($_.Exception.Message)" -ForegroundColor Yellow
+    Write-Host "Service may fail to start. Try running: icacls `"$InstallDir`" /grant SYSTEM:RX /T" -ForegroundColor Yellow
+}
+
 # Check if service already exists
 $existingService = Get-Service -Name $ServiceName -ErrorAction SilentlyContinue
 if ($existingService) {
@@ -73,8 +96,8 @@ Write-Host "Installing service..." -ForegroundColor Green
 # Set environment variable for port
 $env:APP_PORT = $Port
 
-# Install service
-& "$nssmPath" install $ServiceName $pythonExe $appScript
+# Install service with properly quoted paths
+& "$nssmPath" install $ServiceName "`"$pythonExe`"" "`"$appScript`""
 if ($LASTEXITCODE -ne 0) {
     Write-Host "ERROR: Failed to install service!" -ForegroundColor Red
     exit 1

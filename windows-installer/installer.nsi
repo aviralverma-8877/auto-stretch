@@ -204,6 +204,10 @@ Section "Install"
   nsExec::ExecToLog '"$INSTDIR\venv\Scripts\pip.exe" install --upgrade pip wheel'
   nsExec::ExecToLog '"$INSTDIR\venv\Scripts\pip.exe" install -r "$INSTDIR\requirements.txt"'
 
+  ; Grant permissions to SYSTEM account (required for service)
+  DetailPrint "Setting file permissions for service..."
+  nsExec::ExecToLog 'icacls "$INSTDIR" /grant SYSTEM:(OI)(CI)RX /T /Q'
+
   ; Install and configure service
   DetailPrint "Installing Windows service..."
   nsExec::ExecToLog 'powershell -ExecutionPolicy Bypass -File "$INSTDIR\install-service.ps1" "$INSTDIR" "$PortNumber"'

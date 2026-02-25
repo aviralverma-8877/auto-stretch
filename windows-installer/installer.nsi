@@ -174,20 +174,21 @@ Section "Install"
   File "start-service.ps1"
   File "stop-service.ps1"
 
-  ; Download NSSM (Non-Sucking Service Manager)
-  DetailPrint "Downloading NSSM..."
-  inetc::get "https://nssm.cc/release/nssm-2.24.zip" "$TEMP\nssm.zip" /END
-  Pop $0
-  ${If} $0 == "OK"
-    DetailPrint "Extracting NSSM..."
-    nsisunz::Unzip "$TEMP\nssm.zip" "$TEMP"
-    CopyFiles "$TEMP\nssm-2.24\win64\nssm.exe" "$INSTDIR\nssm.exe"
-    Delete "$TEMP\nssm.zip"
-    RMDir /r "$TEMP\nssm-2.24"
-  ${Else}
-    ; If download fails, continue anyway (installer includes fallback)
-    DetailPrint "Warning: Could not download NSSM. Using local copy."
-  ${EndIf}
+  ; Copy NSSM (Non-Sucking Service Manager)
+  DetailPrint "Installing NSSM service manager..."
+  ; Check if nssm.exe exists in installer directory
+  IfFileExists "$EXEDIR\nssm.exe" 0 +3
+    CopyFiles "$EXEDIR\nssm.exe" "$INSTDIR\nssm.exe"
+    Goto nssm_done
+  ; If not in EXEDIR, try current directory
+  IfFileExists "nssm.exe" 0 nssm_missing
+    File "nssm.exe"
+    Goto nssm_done
+  nssm_missing:
+    DetailPrint "Warning: NSSM not found. Service installation may fail."
+    DetailPrint "Please download NSSM from https://nssm.cc/release/nssm-2.24.zip"
+    DetailPrint "Extract nssm.exe to $INSTDIR manually after installation."
+  nssm_done:
 
   ; Create config file with port
   FileOpen $0 "$INSTDIR\config.env" w

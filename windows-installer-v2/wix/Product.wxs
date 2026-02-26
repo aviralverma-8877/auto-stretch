@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <?define ProductName = "Auto Stretch" ?>
+  <?define ProductVersion = "$(var.Version)" ?>
+  <?define Manufacturer = "Auto Stretch Team" ?>
+  <?define UpgradeCode = "A5714C8E-9B2F-4D6A-8F3E-1A2B3C4D5E6F" ?>
+
+  <Product Id="*"
+           Name="$(var.ProductName)"
+           Language="1033"
+           Version="$(var.ProductVersion)"
+           Manufacturer="$(var.Manufacturer)"
+           UpgradeCode="$(var.UpgradeCode)">
+
+    <Package InstallerVersion="200"
+             Compressed="yes"
+             InstallScope="perMachine"
+             Platform="x64"
+             Description="Auto Stretch Installer"
+             Comments="Flask-based astronomy image processor" />
+
+    <!-- Require Windows 10 or later, 64-bit -->
+    <Condition Message="This application requires Windows 10 or later (64-bit).">
+      <![CDATA[Installed OR (VersionNT >= 603 AND VersionNT64)]]>
+    </Condition>
+
+    <!-- Major upgrade configuration -->
+    <MajorUpgrade
+      DowngradeErrorMessage="A newer version of $(var.ProductName) is already installed."
+      Schedule="afterInstallInitialize" />
+
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- Properties -->
+    <Property Id="ARPPRODUCTICON" Value="AppIcon" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/example/auto-stretch" />
+    <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+    <Property Id="PORT" Value="5000" />
+
+    <!-- Directory structure -->
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <!-- Install to C:\ root to avoid path quoting issues -->
+      <Directory Id="SystemDrive">
+        <Directory Id="INSTALLFOLDER" Name="AutoStretch">
+
+          <!-- Python directory -->
+          <Directory Id="PythonDir" Name="python">
+            <Component Id="PythonFiles" Guid="B6825D9F-0C3E-4E7A-9F4E-2B3C4D5E6F70" Win64="yes">
+              <File Id="python.exe" Source="$(var.PythonDir)\python.exe" KeyPath="yes" />
+              <File Id="python312.dll" Source="$(var.PythonDir)\python312.dll" />
+              <File Id="python3.dll" Source="$(var.PythonDir)\python3.dll" />
+              <File Id="pythonw.exe" Source="$(var.PythonDir)\pythonw.exe" />
+              <File Id="python312.zip" Source="$(var.PythonDir)\python312.zip" />
+              <File Id="python312._pth" Source="$(var.PythonDir)\python312._pth" />
+              <File Id="get_pip.py" Source="$(var.PythonDir)\get-pip.py" />
+              <File Id="python.cat" Source="$(var.PythonDir)\python.cat" />
+              <File Id="LICENSE.txt" Source="$(var.PythonDir)\LICENSE.txt" />
+              <!-- Core DLLs -->
+              <File Id="libcrypto_3.dll" Source="$(var.PythonDir)\libcrypto-3.dll" />
+              <File Id="libssl_3.dll" Source="$(var.PythonDir)\libssl-3.dll" />
+              <File Id="libffi_8.dll" Source="$(var.PythonDir)\libffi-8.dll" />
+              <File Id="sqlite3.dll" Source="$(var.PythonDir)\sqlite3.dll" />
+              <File Id="vcruntime140.dll" Source="$(var.PythonDir)\vcruntime140.dll" />
+              <File Id="vcruntime140_1.dll" Source="$(var.PythonDir)\vcruntime140_1.dll" />
+              <!--Extension modules (.pyd files) -->
+              <File Id="_asyncio.pyd" Source="$(var.PythonDir)\_asyncio.pyd" />
+              <File Id="_bz2.pyd" Source="$(var.PythonDir)\_bz2.pyd" />
+              <File Id="_ctypes.pyd" Source="$(var.PythonDir)\_ctypes.pyd" />
+              <File Id="_decimal.pyd" Source="$(var.PythonDir)\_decimal.pyd" />
+              <File Id="_elementtree.pyd" Source="$(var.PythonDir)\_elementtree.pyd" />
+              <File Id="_hashlib.pyd" Source="$(var.PythonDir)\_hashlib.pyd" />
+              <File Id="_lzma.pyd" Source="$(var.PythonDir)\_lzma.pyd" />
+              <File Id="_msi.pyd" Source="$(var.PythonDir)\_msi.pyd" />
+              <File Id="_multiprocessing.pyd" Source="$(var.PythonDir)\_multiprocessing.pyd" />
+              <File Id="_overlapped.pyd" Source="$(var.PythonDir)\_overlapped.pyd" />
+              <File Id="_queue.pyd" Source="$(var.PythonDir)\_queue.pyd" />
+              <File Id="_socket.pyd" Source="$(var.PythonDir)\_socket.pyd" />
+              <File Id="_sqlite3.pyd" Source="$(var.PythonDir)\_sqlite3.pyd" />
+              <File Id="_ssl.pyd" Source="$(var.PythonDir)\_ssl.pyd" />
+              <File Id="_uuid.pyd" Source="$(var.PythonDir)\_uuid.pyd" />
+              <File Id="_wmi.pyd" Source="$(var.PythonDir)\_wmi.pyd" />
+              <File Id="_zoneinfo.pyd" Source="$(var.PythonDir)\_zoneinfo.pyd" />
+              <File Id="pyexpat.pyd" Source="$(var.PythonDir)\pyexpat.pyd" />
+              <File Id="select.pyd" Source="$(var.PythonDir)\select.pyd" />
+              <File Id="unicodedata.pyd" Source="$(var.PythonDir)\unicodedata.pyd" />
+              <File Id="winsound.pyd" Source="$(var.PythonDir)\winsound.pyd" />
+            </Component>
+          </Directory>
+
+          <!-- App directory -->
+          <Directory Id="AppDir" Name="app">
+            <Component Id="AppFiles" Guid="C7936E0F-1D4F-5F8B-0A5F-3C4D5E6F7A81" Win64="yes">
+              <File Id="app.py" Source="$(var.SourceDir)\app.py" KeyPath="yes" />
+              <File Id="service_wrapper.py" Source="$(var.SourceDir)\service_wrapper.py" />
+              <File Id="config_manager.py" Source="$(var.SourceDir)\config_manager.py" />
+              <File Id="post_process.py" Source="$(var.SourceDir)\post_process.py" />
+              <File Id="requirements.txt" Source="$(var.ProjectRoot)\requirements.txt" />
+            </Component>
+
+            <!-- Templates directory -->
+            <Directory Id="TemplatesDir" Name="templates">
+              <Component Id="TemplateFiles" Guid="D8047F1A-2E5F-6A9C-1A6F-4D5E6F7A8A92" Win64="yes">
+                <File Id="index.html" Source="$(var.SourceDir)\templates\index.html" KeyPath="yes" />
+              </Component>
+            </Directory>
+
+            <!-- Static directory -->
+            <Directory Id="StaticDir" Name="static">
+              <!-- CSS -->
+              <Directory Id="CssDir" Name="css">
+                <Component Id="CssFiles" Guid="E9158F2A-3F6A-7A0D-2A7A-5E6F7A8A9A03" Win64="yes">
+                  <File Id="style.css" Source="$(var.SourceDir)\static\css\style.css" KeyPath="yes" />
+                </Component>
+              </Directory>
+
+              <!-- Favicon files (in static root) -->
+              <Component Id="FaviconFiles" Guid="F137AA4C-5A8B-9B2F-4C9B-7F8A9A0B1C25" Win64="yes">
+                <File Id="favicon.ico" Source="$(var.SourceDir)\static\favicon.ico" KeyPath="yes" />
+                <File Id="favicon.png" Source="$(var.SourceDir)\static\favicon.png" />
+                <File Id="favicon.svg" Source="$(var.SourceDir)\static\favicon.svg" />
+              </Component>
+
+            </Directory>
+          </Directory>
+
+          <!-- Logs directory (created empty) -->
+          <Directory Id="LogsDir" Name="logs">
+            <Component Id="LogsFolder" Guid="A248BB5D-6A9C-0C3F-5D0C-8A9A0B1C2D36" Win64="yes">
+              <CreateFolder />
+            </Component>
+          </Directory>
+
+          <!-- Scripts -->
+          <Component Id="InstallScripts" Guid="B359CC6E-7B0D-1D4A-6E1D-9A0B1C2D3E47" Win64="yes">
+            <File Id="setup_python.ps1" Source="$(var.ProjectRoot)\windows-installer-v2\scripts\setup-python.ps1" KeyPath="yes" />
+            <File Id="install_service.ps1" Source="$(var.ProjectRoot)\windows-installer-v2\scripts\install-service.ps1" />
+            <File Id="uninstall_service.ps1" Source="$(var.ProjectRoot)\windows-installer-v2\scripts\uninstall-service.ps1" />
+            <File Id="finalize.ps1" Source="$(var.ProjectRoot)\windows-installer-v2\scripts\finalize.ps1" />
+          </Component>
+
+          <!-- Configuration -->
+          <Component Id="ConfigFiles" Guid="C460DD7F-8C1E-2E5A-7F2E-0B1C2D3E4F58" Win64="yes">
+            <File Id="config.json" Source="$(var.ProjectRoot)\windows-installer-v2\config\config.json.template" Name="config.json" KeyPath="yes" />
+          </Component>
+
+        </Directory>
+      </Directory>
+
+      <!-- Start Menu -->
+      <Directory Id="ProgramMenuFolder">
+        <Directory Id="ApplicationProgramsFolder" Name="Auto Stretch">
+          <Component Id="ApplicationShortcuts" Guid="D571EE8F-9D2F-3F6B-8F3F-1C2D3E4F5A69" Win64="yes">
+            <Shortcut Id="ApplicationStartMenuShortcut"
+                     Name="Auto Stretch"
+                     Description="Open Auto Stretch Web Interface"
+                     Target="[System64Folder]cmd.exe"
+                     Arguments="/c start http://localhost:5000"
+                     WorkingDirectory="AppDir" />
+
+            <RemoveFolder Id="CleanUpShortCut" Directory="ApplicationProgramsFolder" On="uninstall"/>
+            <RegistryValue Root="HKCU" Key="Software\AutoStretch" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+          </Component>
+        </Directory>
+      </Directory>
+    </Directory>
+
+    <!-- Features -->
+    <Feature Id="ProductFeature" Title="Auto Stretch" Level="1">
+      <ComponentRef Id="PythonFiles" />
+      <ComponentRef Id="AppFiles" />
+      <ComponentRef Id="TemplateFiles" />
+      <ComponentRef Id="CssFiles" />
+      <ComponentRef Id="FaviconFiles" />
+      <ComponentRef Id="LogsFolder" />
+      <ComponentRef Id="InstallScripts" />
+      <ComponentRef Id="ConfigFiles" />
+      <ComponentRef Id="ApplicationShortcuts" />
+    </Feature>
+
+    <!-- Custom Actions -->
+
+    <!-- Setup Python Environment -->
+    <CustomAction Id="SetupPython"
+                  Directory="INSTALLFOLDER"
+                  ExeCommand="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;[INSTALLFOLDER]setup-python.ps1&quot; -InstallDir &quot;[INSTALLFOLDER]&quot;"
+                  Execute="deferred"
+                  Impersonate="no"
+                  Return="check" />
+
+    <!-- Install Service -->
+    <CustomAction Id="InstallService"
+                  Directory="INSTALLFOLDER"
+                  ExeCommand="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;[INSTALLFOLDER]install-service.ps1&quot; -InstallDir &quot;[INSTALLFOLDER]&quot; -Port [PORT]"
+                  Execute="deferred"
+                  Impersonate="no"
+                  Return="check" />
+
+    <!-- Finalize Installation -->
+    <CustomAction Id="FinalizeInstall"
+                  Directory="INSTALLFOLDER"
+                  ExeCommand="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;[INSTALLFOLDER]finalize.ps1&quot; -InstallDir &quot;[INSTALLFOLDER]&quot; -Port [PORT]"
+                  Execute="deferred"
+                  Impersonate="no"
+                  Return="check" />
+
+    <!-- Uninstall Service -->
+    <CustomAction Id="UninstallService"
+                  Directory="INSTALLFOLDER"
+                  ExeCommand="powershell.exe -NoProfile -ExecutionPolicy Bypass -File &quot;[INSTALLFOLDER]uninstall-service.ps1&quot; -InstallDir &quot;[INSTALLFOLDER]&quot;"
+                  Execute="deferred"
+                  Impersonate="no"
+                  Return="ignore" />
+
+    <!-- Installation Sequence -->
+    <InstallExecuteSequence>
+      <!-- Setup Python after files are installed -->
+      <Custom Action="SetupPython" After="InstallFiles">
+        NOT Installed AND NOT REMOVE
+      </Custom>
+
+      <!-- Install Windows Service after Python setup -->
+      <Custom Action="InstallService" After="SetupPython">
+        NOT Installed AND NOT REMOVE
+      </Custom>
+
+      <!-- Finalize (shortcuts, registry) after service installation -->
+      <Custom Action="FinalizeInstall" After="InstallService">
+        NOT Installed AND NOT REMOVE
+      </Custom>
+
+      <!-- Uninstall service before removing files -->
+      <Custom Action="UninstallService" Before="RemoveFiles">
+        REMOVE="ALL"
+      </Custom>
+    </InstallExecuteSequence>
+
+    <!-- UI -->
+    <UIRef Id="WixUI_InstallDir" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+
+    <!-- License (optional - commented out as LICENSE.rtf doesn't exist) -->
+    <!-- <WixVariable Id="WixUILicenseRtf" Value="$(var.ProjectRoot)\LICENSE.rtf" /> -->
+
+  </Product>
+</Wix>

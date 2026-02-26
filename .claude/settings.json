@@ -17,7 +17,13 @@
       "Bash(powershell -Command \"Test-Path ''C:\\\\Program Files\\\\AutoStretch''\")",
       "Bash(powershell -Command \"icacls ''C:\\\\Program Files\\\\AutoStretch'' /grant ''NT AUTHORITY\\\\SYSTEM:\\(OI\\)\\(CI\\)F'' /T /Q\")",
       "Bash(wc:*)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "Bash(test:*)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./download-python.ps1)",
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./build-msi.ps1)",
+      "Read(//c/Program Files \\(x86\\)/**)",
+      "Read(//c//**)",
+      "Bash(powershell.exe -Command \"Get-ChildItem ''C:\\\\Program Files \\(x86\\)'' -Recurse -Filter ''candle.exe'' -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\aviralv\\Downloads\\auto-streach",

@@ -45,46 +45,6 @@
 
           <!-- Python directory -->
           <Directory Id="PythonDir" Name="python">
-            <Component Id="PythonFiles" Guid="B6825D9F-0C3E-4E7A-9F4E-2B3C4D5E6F70" Win64="yes">
-              <File Id="python.exe" Source="$(var.PythonDir)\python.exe" KeyPath="yes" />
-              <File Id="python312.dll" Source="$(var.PythonDir)\python312.dll" />
-              <File Id="python3.dll" Source="$(var.PythonDir)\python3.dll" />
-              <File Id="pythonw.exe" Source="$(var.PythonDir)\pythonw.exe" />
-              <File Id="python312.zip" Source="$(var.PythonDir)\python312.zip" />
-              <File Id="python312._pth" Source="$(var.PythonDir)\python312._pth" />
-              <File Id="get_pip.py" Source="$(var.PythonDir)\get-pip.py" />
-              <File Id="python.cat" Source="$(var.PythonDir)\python.cat" />
-              <File Id="LICENSE.txt" Source="$(var.PythonDir)\LICENSE.txt" />
-              <!-- Core DLLs -->
-              <File Id="libcrypto_3.dll" Source="$(var.PythonDir)\libcrypto-3.dll" />
-              <File Id="libssl_3.dll" Source="$(var.PythonDir)\libssl-3.dll" />
-              <File Id="libffi_8.dll" Source="$(var.PythonDir)\libffi-8.dll" />
-              <File Id="sqlite3.dll" Source="$(var.PythonDir)\sqlite3.dll" />
-              <File Id="vcruntime140.dll" Source="$(var.PythonDir)\vcruntime140.dll" />
-              <File Id="vcruntime140_1.dll" Source="$(var.PythonDir)\vcruntime140_1.dll" />
-              <!--Extension modules (.pyd files) -->
-              <File Id="_asyncio.pyd" Source="$(var.PythonDir)\_asyncio.pyd" />
-              <File Id="_bz2.pyd" Source="$(var.PythonDir)\_bz2.pyd" />
-              <File Id="_ctypes.pyd" Source="$(var.PythonDir)\_ctypes.pyd" />
-              <File Id="_decimal.pyd" Source="$(var.PythonDir)\_decimal.pyd" />
-              <File Id="_elementtree.pyd" Source="$(var.PythonDir)\_elementtree.pyd" />
-              <File Id="_hashlib.pyd" Source="$(var.PythonDir)\_hashlib.pyd" />
-              <File Id="_lzma.pyd" Source="$(var.PythonDir)\_lzma.pyd" />
-              <File Id="_msi.pyd" Source="$(var.PythonDir)\_msi.pyd" />
-              <File Id="_multiprocessing.pyd" Source="$(var.PythonDir)\_multiprocessing.pyd" />
-              <File Id="_overlapped.pyd" Source="$(var.PythonDir)\_overlapped.pyd" />
-              <File Id="_queue.pyd" Source="$(var.PythonDir)\_queue.pyd" />
-              <File Id="_socket.pyd" Source="$(var.PythonDir)\_socket.pyd" />
-              <File Id="_sqlite3.pyd" Source="$(var.PythonDir)\_sqlite3.pyd" />
-              <File Id="_ssl.pyd" Source="$(var.PythonDir)\_ssl.pyd" />
-              <File Id="_uuid.pyd" Source="$(var.PythonDir)\_uuid.pyd" />
-              <File Id="_wmi.pyd" Source="$(var.PythonDir)\_wmi.pyd" />
-              <File Id="_zoneinfo.pyd" Source="$(var.PythonDir)\_zoneinfo.pyd" />
-              <File Id="pyexpat.pyd" Source="$(var.PythonDir)\pyexpat.pyd" />
-              <File Id="select.pyd" Source="$(var.PythonDir)\select.pyd" />
-              <File Id="unicodedata.pyd" Source="$(var.PythonDir)\unicodedata.pyd" />
-              <File Id="winsound.pyd" Source="$(var.PythonDir)\winsound.pyd" />
-            </Component>
           </Directory>
 
           <!-- App directory -->
@@ -166,7 +126,7 @@
 
     <!-- Features -->
     <Feature Id="ProductFeature" Title="Auto Stretch" Level="1">
-      <ComponentRef Id="PythonFiles" />
+      <ComponentGroupRef Id="PythonFilesGroup" />
       <ComponentRef Id="AppFiles" />
       <ComponentRef Id="TemplateFiles" />
       <ComponentRef Id="CssFiles" />

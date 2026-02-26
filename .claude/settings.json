@@ -26,7 +26,9 @@
       "Bash(powershell.exe -Command \"Get-ChildItem ''C:\\\\Program Files \\(x86\\)'' -Recurse -Filter ''candle.exe'' -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty FullName\")",
       "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File harvest-python.ps1)",
       "Bash(powershell.exe -Command \"\\(Get-Content ''windows-installer-v2/wix/PythonFiles.wxs''\\).Count\")",
-      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File build-msi.ps1)"
+      "Bash(powershell.exe -NoProfile -ExecutionPolicy Bypass -File build-msi.ps1)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "additionalDirectories": [
       "C:\\Users\\aviralv\\Downloads\\auto-streach",

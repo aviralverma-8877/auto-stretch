@@ -3,6 +3,9 @@ Flask==3.0.0
 Werkzeug==3.0.1
 tifffile>=2024.8.0
 
+# Windows service support (Windows only)
+pywin32>=306; sys_platform == 'win32'
+
 # Heavy compiled dependencies (installed via apt system packages in Debian package)
 # These are listed here for reference and development environments
 # In production Debian package, these come from: python3-pil, python3-numpy

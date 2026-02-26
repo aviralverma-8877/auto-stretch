@@ -8,18 +8,35 @@ import numpy as np
 from datetime import datetime
 import tifffile
 
+# Import configuration manager
+try:
+    from config_manager import ConfigManager
+    CONFIG_AVAILABLE = True
+except ImportError:
+    CONFIG_AVAILABLE = False
+    print("Warning: config_manager not available. Using defaults.")
+
 # Get the directory where this script is located
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# Load configuration
+if CONFIG_AVAILABLE:
+    config = ConfigManager.load_config()
+    max_upload_mb = config.get('max_upload_mb', 500)
+    upload_folder = config.get('temp_dir') or tempfile.gettempdir()
+else:
+    max_upload_mb = 500
+    upload_folder = tempfile.gettempdir()
 
 # Initialize Flask with explicit template and static folder paths
 app = Flask(__name__,
             template_folder=os.path.join(BASE_DIR, 'templates'),
             static_folder=os.path.join(BASE_DIR, 'static'))
-app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB max file size
-app.config['UPLOAD_FOLDER'] = tempfile.gettempdir()
+app.config['MAX_CONTENT_LENGTH'] = max_upload_mb * 1024 * 1024  # Max file size from config
+app.config['UPLOAD_FOLDER'] = upload_folder
 
 # Optimize upload performance
-app.config['MAX_CONTENT_PATH'] = 500 * 1024 * 1024
+app.config['MAX_CONTENT_PATH'] = max_upload_mb * 1024 * 1024
 # Use larger buffer for file operations (8MB)
 BUFFER_SIZE = 8 * 1024 * 1024
 
@@ -365,21 +382,28 @@ def cleanup_file():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    # Read port from environment variable or config file, default to 5000
-    port = int(os.environ.get('APP_PORT', 5000))
+    # Load configuration using ConfigManager (new v2 approach)
+    if CONFIG_AVAILABLE:
+        port = config.get('port', 5000)
+        debug = config.get('debug', False)
+    else:
+        # Fallback: read port from environment variable or config.env (legacy)
+        port = int(os.environ.get('APP_PORT', 5000))
+        debug = False
 
-    # Try to read from config.env if environment variable not set
-    if port == 5000:
-        config_path = os.path.join(BASE_DIR, 'config.env')
-        if os.path.exists(config_path):
-            try:
-                with open(config_path, 'r') as f:
-                    for line in f:
-                        if line.startswith('APP_PORT='):
-                            port = int(line.split('=')[1].strip())
-                            break
-            except Exception as e:
-                print(f"Warning: Could not read config.env: {e}")
+        # Try to read from config.env if environment variable not set
+        if port == 5000:
+            config_path = os.path.join(BASE_DIR, 'config.env')
+            if os.path.exists(config_path):
+                try:
+                    with open(config_path, 'r') as f:
+                        for line in f:
+                            if line.startswith('APP_PORT='):
+                                port = int(line.split('=')[1].strip())
+                                break
+                except Exception as e:
+                    print(f"Warning: Could not read config.env: {e}")
 
     print(f"Starting Auto Stretch on port {port}...")
-    app.run(debug=False, host='0.0.0.0', port=port, threaded=True)
+    print(f"Configuration: max_upload={max_upload_mb}MB, debug={debug}")
+    app.run(debug=debug, host='0.0.0.0', port=port, threaded=True)
